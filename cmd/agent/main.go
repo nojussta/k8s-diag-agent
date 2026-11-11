@@ -28,19 +28,20 @@ func main() {
 	alertPath := flag.String("alert", "", "alert JSON (a single Alertmanager alert, or a webhook payload)")
 	out := flag.String("out", ".", "output directory")
 	server := flag.String("server", "", "mcp-server binary (default: <root>/build/mcp-server)")
-	model := flag.String("model", "", "Gemini model id (default: $GEMINI_MODEL or "+agent.DefaultGeminiModel+")")
+	model := flag.String("model", "", "model id (default: $GEMINI_MODEL / "+agent.DefaultGeminiModel+" for gemini, "+agent.DefaultLocalModel+" for apfel)")
+	provider := flag.String("provider", "", "auto | apfel | gemini (default: $LLM_PROVIDER or auto: local apfel when installed, else Gemini)")
 	flag.Parse()
 	if *alertPath == "" {
 		fmt.Fprintln(os.Stderr, "usage: agent --alert FILE [--out DIR] [--model ID]")
 		os.Exit(2)
 	}
-	if err := run(*alertPath, *out, *server, *model); err != nil {
+	if err := run(*alertPath, *out, *server, *model, *provider); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}
 }
 
-func run(alertPath, out, server, model string) error {
+func run(alertPath, out, server, model, provider string) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
@@ -49,15 +50,33 @@ func run(alertPath, out, server, model string) error {
 		return err
 	}
 	loadDotEnv(filepath.Join(root, ".env"))
-	key := os.Getenv("GEMINI_API_KEY")
-	if key == "" {
-		return fmt.Errorf("GEMINI_API_KEY is not set (put it in %s/.env)", root)
+	if provider == "" {
+		provider = os.Getenv("LLM_PROVIDER")
 	}
-	if model == "" {
+	if provider == "" || provider == "auto" {
+		// Local first: it costs nothing and nothing leaves the machine.
+		provider = "gemini"
+		if agent.ApfelAvailable(os.Getenv("APFEL_URL")) {
+			provider = "apfel"
+		}
+	}
+	if provider != "apfel" && provider != "gemini" {
+		return fmt.Errorf("unknown provider %q (use auto, apfel or gemini)", provider)
+	}
+	if model == "" && provider == "gemini" {
 		model = os.Getenv("GEMINI_MODEL")
 	}
-	if model == "" {
-		model = agent.DefaultGeminiModel
+	key := ""
+	if provider == "gemini" {
+		key = os.Getenv("GEMINI_API_KEY")
+		if key == "" {
+			return fmt.Errorf("GEMINI_API_KEY is not set (put it in %s/.env, or use --provider apfel)", root)
+		}
+		if model == "" {
+			model = agent.DefaultGeminiModel
+		}
+	} else if model == "" {
+		model = agent.DefaultLocalModel
 	}
 	if server == "" {
 		server = filepath.Join(root, "build", "mcp-server")
@@ -98,8 +117,31 @@ func run(alertPath, out, server, model string) error {
 	}
 	defer traceFile.Close()
 
+	var llm agent.Model
+	limits := agent.Limits{}
+	if provider == "apfel" {
+		url, stopApfel, err := agent.StartApfel(ctx, os.Getenv("APFEL_URL"))
+		if err != nil {
+			return err
+		}
+		defer stopApfel()
+		local := agent.NewLocal(url, model, defs, docs.DiagnosisSchema)
+		if d := os.Getenv("LOCAL_LLM_DUMP"); d != "" {
+			if f, err := os.Create(d); err == nil {
+				defer f.Close()
+				local.Dump = f
+			}
+		}
+		llm = local
+		limits = agent.LocalLimits
+	} else {
+		llm = agent.NewGemini(key, model, defs, docs.DiagnosisSchema)
+	}
+	fmt.Printf("provider=%s model=%s\n", provider, model)
+
 	a := &agent.Agent{
-		Model:     agent.NewGemini(key, model, defs, docs.DiagnosisSchema),
+		Model:     llm,
+		Limits:    limits,
 		ModelName: model,
 		Tools:     client,
 		Allowed:   allowed,

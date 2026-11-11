@@ -1,5 +1,5 @@
 # Experiment environment: `make up` -> `make check` -> `make scenario S=s1-oomkilled` -> `make down`.
-# All tools are written in Go (cmd/labctl, cmd/alert-receiver, ...); Go >= 1.24 is required.
+# All tools are written in Go (cmd/labctl, cmd/alert-receiver, cmd/agent, ...); Go >= 1.24 is required.
 # Every command uses a separate kubeconfig file (.kube/config), so work cluster
 # contexts (~/.kube/config) are never used or modified.
 
@@ -15,7 +15,7 @@ GOSRC := go.mod go.sum $(shell find cmd internal -name '*.go')
 GOARCH := $(shell go env GOARCH)
 
 .PHONY: help up cluster repos monitoring logging app receiver rules check scenario summary evidence \
-        alerts grafana prometheus alertmanager status down build test vet probe agent
+        alerts grafana prometheus alertmanager status down build test vet probe agent agent-local agent-gemini
 
 help: ## Show the targets
 	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -56,8 +56,14 @@ $(LABCTL): $(GOSRC)
 	go build -o build/mcp-probe ./cmd/mcp-probe
 	go build -o build/agent ./cmd/agent
 
-agent: build ## Scenario with the Gemini agent (needs GEMINI_API_KEY in .env): make agent S=s1-oomkilled
-	build/labctl scenario $(S) --agent-cmd "build/agent --alert {alert} --out {out}"
+agent: build ## Scenario with the agent; local apfel when installed, else Gemini: make agent S=s1-oomkilled [N=3]
+	build/labctl scenario $(S) --repeat $(or $(N),1) --agent-cmd "build/agent --alert {alert} --out {out}"
+
+agent-local: build ## Scenario with the on-device model (apfel, free, offline): make agent-local S=s1-oomkilled [N=3]
+	build/labctl scenario $(S) --repeat $(or $(N),1) --agent-cmd "build/agent --provider apfel --alert {alert} --out {out}"
+
+agent-gemini: build ## Scenario with Gemini (needs GEMINI_API_KEY in .env; free tier is ~20 requests/day/model)
+	build/labctl scenario $(S) --repeat $(or $(N),1) --agent-cmd "build/agent --provider gemini --alert {alert} --out {out}"
 
 probe: build ## MCP server: list the 10 tools and run an investigation using MCP calls only (after make scenario S=... --keep)
 	build/mcp-probe -ns demo
