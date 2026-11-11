@@ -1,0 +1,10 @@
+{
+  "tool_calls": 5,
+  "rejected_calls": 0,
+  "repairs": 0,
+  "duration_s": 14.526509958,
+  "input_tokens": 21290,
+  "output_tokens": 1999,
+  "stop_reason": "diagnosis",
+  "model": "gemini-3-flash-preview"
+}

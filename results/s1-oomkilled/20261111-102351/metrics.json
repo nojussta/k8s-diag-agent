@@ -1,0 +1,10 @@
+{
+  "tool_calls": 4,
+  "rejected_calls": 0,
+  "repairs": 0,
+  "duration_s": 44.318639041,
+  "input_tokens": 7804,
+  "output_tokens": 437,
+  "stop_reason": "model_error",
+  "model": "gemini-3.5-flash"
+}

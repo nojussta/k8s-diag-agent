@@ -1,0 +1,40 @@
+{
+  "summary": "The backend pod is crash looping because it is being OOMKilled shortly after startup due to a configuration mismatch between its memory limits and its runtime arguments.",
+  "root_cause": {
+    "category": "OOMKilled",
+    "component": "demo/deployment/backend (container backend)",
+    "explanation": "The container is configured with the argument '--stress-memory=256', which forces it to allocate 256Mi of memory. However, the container's memory limit is set to 128Mi, leading the kernel to terminate the process (OOMKilled) as soon as it exceeds the limit."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "t1",
+      "source": "get_pod_status",
+      "fact": "The 'backend' container last state was 'terminated' with reason 'OOMKilled' (exit code 137) and it has a memory limit of '128Mi'."
+    },
+    {
+      "tool_call": "t2",
+      "source": "get_resource_usage",
+      "fact": "Prometheus records show the container's memory working set peaked at approximately 123Mi, very close to its 128Mi limit, and confirmed the last termination reason as 'OOMKilled'."
+    },
+    {
+      "tool_call": "t3",
+      "source": "get_rollout_history",
+      "fact": "The latest rollout (revision 8) added the argument '--stress-memory=256' to the 'backend' container, which exceeds the defined memory limit."
+    }
+  ],
+  "impact": "The backend service is unstable with one of its pods failing to start, leading to reduced capacity and readiness probe failures.",
+  "next_steps": [
+    {
+      "action": "Roll back the deployment to the previous stable revision (revision 7).",
+      "command": "kubectl rollout undo deployment/backend -n demo --to-revision=7",
+      "requires_human_approval": true
+    },
+    {
+      "action": "Alternatively, increase the memory limit to at least 256Mi plus overhead if the stress test is intentional.",
+      "command": "kubectl patch deployment backend -n demo --type='json' -p='[{\"op\": \"replace\", \"path\": \"/spec/template/spec/containers/0/resources/limits/memory\", \"value\":\"384Mi\"}]'",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

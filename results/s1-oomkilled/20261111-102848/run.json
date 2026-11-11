@@ -1,0 +1,42 @@
+{
+  "scenario": "s1-oomkilled",
+  "title": "Naujos versijos atminties poreikis viršija ribą (OOMKilled -\u003e CrashLoopBackOff)",
+  "started": "2026-11-11T10:28:48+0200",
+  "steps": {
+    "agent": "ok",
+    "baseline": "healthy",
+    "detect": "ok",
+    "evidence": "ok",
+    "reset": "ok"
+  },
+  "t_inject": 1794385728.816457,
+  "t_alert": 1794385822.3845487,
+  "detection_latency_s": 93.6,
+  "alert_labels": {
+    "alertname": "LabPodCrashLooping",
+    "container": "backend",
+    "endpoint": "http",
+    "instance": "10.244.2.2:8080",
+    "job": "kube-state-metrics",
+    "lab": "kursinis",
+    "namespace": "demo",
+    "pod": "backend-7b8d9f4db-7v89j",
+    "prometheus": "monitoring/kps-prometheus",
+    "reason": "CrashLoopBackOff",
+    "service": "kps-kube-state-metrics",
+    "severity": "warning",
+    "uid": "344238f3-a954-4212-8bf1-f72914fe4abc"
+  },
+  "baseline_collection": {
+    "calls": 20,
+    "duration_s": 0.08
+  },
+  "agent": {
+    "exit_code": 0,
+    "duration_s": 15.6,
+    "diagnosed": true,
+    "correct": true,
+    "verdict": "cause and component match"
+  },
+  "finished": "2026-11-11T10:32:51+0200"
+}

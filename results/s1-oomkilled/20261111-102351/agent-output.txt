@@ -1,0 +1,2 @@
+model=gemini-3.5-flash tool_calls=4 rejected=0 repairs=0 duration=44.3s tokens in/out=7804/437 stop=model_error
+error: gemini: HTTP 429 (will retry): {"error":{"message":"Rate limit exceeded for model gemini-3.6-flash (limit: 20 requests per day on Free Tier). Please retry in 23h33m50s or upgrade your tier at https://ai.dev/rate-limit.","code":"too_many_requests"}}
