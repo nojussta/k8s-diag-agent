@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/k8s-diag-agent/diagnosis.schema.json",
+  "title": "Diagnosis",
+  "description": "Agent output for one alert (see docs/architecture.md). The orchestrator adds the `metrics` block; the model fills everything else.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["summary", "root_cause", "confidence", "evidence", "impact", "next_steps", "unknowns"],
+  "properties": {
+    "summary": { "type": "string", "description": "One or two sentences for the on-call engineer." },
+    "root_cause": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["category", "component", "explanation"],
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": ["OOMKilled", "ApplicationCrash", "ImagePullError", "ConfigurationError", "ProbeFailure",
+                   "Scheduling", "NodeProblem", "DependencyFailure", "Unknown"]
+        },
+        "component": { "type": "string", "description": "namespace/kind/name (container X)" },
+        "explanation": { "type": "string" }
+      }
+    },
+    "confidence": { "type": "string", "enum": ["high", "medium", "low"] },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["tool_call", "source", "fact"],
+        "properties": {
+          "tool_call": { "type": "string", "description": "ID of the tool call in the trace, e.g. t3" },
+          "source": { "type": "string", "description": "Tool name" },
+          "fact": { "type": "string", "description": "The observed fact, quoted or paraphrased from the tool result" }
+        }
+      }
+    },
+    "impact": { "type": "string" },
+    "next_steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action", "command", "requires_human_approval"],
+        "properties": {
+          "action": { "type": "string" },
+          "command": { "type": ["string", "null"] },
+          "requires_human_approval": { "type": "boolean" }
+        }
+      }
+    },
+    "unknowns": { "type": "array", "items": { "type": "string" } },
+    "metrics": {
+      "type": "object",
+      "description": "Filled by the orchestrator, not by the model.",
+      "properties": {
+        "tool_calls": { "type": "integer" },
+        "duration_s": { "type": "number" },
+        "input_tokens": { "type": "integer" },
+        "output_tokens": { "type": "integer" },
+        "cached_input_tokens": { "type": "integer" },
+        "model": { "type": "string" }
+      }
+    }
+  }
+}
