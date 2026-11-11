@@ -1,0 +1,63 @@
+{
+  "version": "4",
+  "groupKey": "{}/{lab=\"kursinis\"}:{alertname=\"LabPodNotReady\", namespace=\"demo\"}",
+  "status": "firing",
+  "receiver": "diag-agent",
+  "groupLabels": {
+    "alertname": "LabPodNotReady",
+    "namespace": "demo"
+  },
+  "commonLabels": {
+    "alertname": "LabPodNotReady",
+    "lab": "kursinis",
+    "namespace": "demo",
+    "prometheus": "monitoring/kps-prometheus",
+    "severity": "warning"
+  },
+  "commonAnnotations": {
+    "runbook_url": "https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodnotready"
+  },
+  "externalURL": "http://kps-alertmanager.monitoring:9093",
+  "alerts": [
+    {
+      "status": "resolved",
+      "labels": {
+        "alertname": "LabPodNotReady",
+        "lab": "kursinis",
+        "namespace": "demo",
+        "pod": "frontend-68747558f7-bfg94",
+        "prometheus": "monitoring/kps-prometheus",
+        "severity": "warning"
+      },
+      "annotations": {
+        "description": "Pod demo/frontend-68747558f7-bfg94 has been in a non-ready phase for longer than 2 minutes.",
+        "runbook_url": "https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodnotready",
+        "summary": "Pod demo/frontend-68747558f7-bfg94 is not ready"
+      },
+      "startsAt": "2026-11-11T11:37:12.348Z",
+      "endsAt": "2026-11-11T11:38:12.348Z",
+      "generatorURL": "http://kps-prometheus.monitoring:9090/graph?g0.expr=sum+by+%28namespace%2C+pod%29+%28kube_pod_status_phase%7Bnamespace%3D%22demo%22%2Cphase%3D~%22Pending%7CUnknown%7CFailed%22%7D%29+%3E+0\u0026g0.tab=1",
+      "fingerprint": "12606e4df651ad12"
+    },
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "LabPodNotReady",
+        "lab": "kursinis",
+        "namespace": "demo",
+        "pod": "frontend-6df678c5fd-jlkrm",
+        "prometheus": "monitoring/kps-prometheus",
+        "severity": "warning"
+      },
+      "annotations": {
+        "description": "Pod demo/frontend-6df678c5fd-jlkrm has been in a non-ready phase for longer than 2 minutes.",
+        "runbook_url": "https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodnotready",
+        "summary": "Pod demo/frontend-6df678c5fd-jlkrm is not ready"
+      },
+      "startsAt": "2026-11-11T11:40:42.348Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://kps-prometheus.monitoring:9090/graph?g0.expr=sum+by+%28namespace%2C+pod%29+%28kube_pod_status_phase%7Bnamespace%3D%22demo%22%2Cphase%3D~%22Pending%7CUnknown%7CFailed%22%7D%29+%3E+0\u0026g0.tab=1",
+      "fingerprint": "b659e918d77c86c4"
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+provider=apfel model=apple-foundationmodel
+ConfigurationError | frontend | confidence medium
+Missing configmap "frontend-config" causes the pod to be not ready.
+model=apple-foundationmodel tool_calls=6 rejected=2 repairs=0 duration=20.2s tokens in/out=17680/806 stop=diagnosis

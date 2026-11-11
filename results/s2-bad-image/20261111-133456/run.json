@@ -1,0 +1,35 @@
+{
+  "scenario": "s2-bad-image",
+  "title": "Non-existent container image tag (ImagePullBackOff)",
+  "started": "2026-11-11T13:34:56+0200",
+  "steps": {
+    "agent": "ok",
+    "baseline": "healthy",
+    "detect": "ok",
+    "evidence": "ok",
+    "reset": "ok"
+  },
+  "t_inject": 1794396896.350427,
+  "t_alert": 1794397042.5143757,
+  "detection_latency_s": 146.2,
+  "alert_labels": {
+    "alertname": "LabPodNotReady",
+    "lab": "kursinis",
+    "namespace": "demo",
+    "pod": "frontend-68747558f7-bfg94",
+    "prometheus": "monitoring/kps-prometheus",
+    "severity": "warning"
+  },
+  "baseline_collection": {
+    "calls": 19,
+    "duration_s": 0.04
+  },
+  "agent": {
+    "exit_code": 0,
+    "duration_s": 26.2,
+    "diagnosed": true,
+    "correct": false,
+    "verdict": "cause does not match"
+  },
+  "finished": "2026-11-11T13:38:20+0200"
+}

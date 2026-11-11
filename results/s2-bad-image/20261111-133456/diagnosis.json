@@ -1,0 +1,38 @@
+{
+  "summary": "The pod is not ready and has been in a non-ready state for over 2 minutes. The logs and metrics do not provide enough information to determine the exact cause.",
+  "root_cause": {
+    "category": "Unknown",
+    "component": "Pod demo/frontend-68747558f7-bfg94",
+    "explanation": "The pod is not ready and has been in a non-ready state for over 2 minutes. The logs and metrics do not provide enough information to determine the exact cause."
+  },
+  "confidence": "medium",
+  "evidence": [
+    {
+      "tool_call": "t1",
+      "source": "K8s API: pods",
+      "fact": "Pod demo/frontend-68747558f7-bfg94 is not ready"
+    },
+    {
+      "tool_call": "t1",
+      "source": "K8s API: pods",
+      "fact": "Pod demo/frontend-68747558f7-bfg94 has been in a non-ready phase for longer than 2 minutes"
+    },
+    {
+      "tool_call": "t7",
+      "source": "list_pods",
+      "fact": "Pod demo/frontend-68747558f7-bfg94 is Pending"
+    }
+  ],
+  "impact": "Pod is not ready and has been in a non-ready state for over 2 minutes.",
+  "next_steps": [
+    {
+      "action": "Check container logs",
+      "command": "kubectl logs frontend-68747558f7-bfg94",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": [
+    "Container logs are not available.",
+    "Pod metrics are not available."
+  ]
+}

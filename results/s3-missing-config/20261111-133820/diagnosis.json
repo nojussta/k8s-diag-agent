@@ -1,0 +1,35 @@
+{
+  "summary": "Missing configmap \"frontend-config\" causes the pod to be not ready.",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "frontend",
+    "explanation": "Missing configmap \"frontend-config\""
+  },
+  "confidence": "medium",
+  "evidence": [
+    {
+      "tool_call": "t1",
+      "source": "get_pod_status",
+      "fact": "Pod demo/frontend-6df678c5fd-jlkrm is not ready"
+    },
+    {
+      "tool_call": "t1",
+      "source": "get_pod_status",
+      "fact": "configmap \"frontend-config\" not found"
+    },
+    {
+      "tool_call": "t6",
+      "source": "list_pods",
+      "fact": "Pod demo/frontend-6df678c5fd-jlkrm is Pending"
+    }
+  ],
+  "impact": "Pod is not ready",
+  "next_steps": [
+    {
+      "action": "Check ConfigMap",
+      "command": "kubectl get configmap frontend-config",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

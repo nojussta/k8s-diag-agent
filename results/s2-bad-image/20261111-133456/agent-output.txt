@@ -1,0 +1,4 @@
+provider=apfel model=apple-foundationmodel
+Unknown | Pod demo/frontend-68747558f7-bfg94 | confidence medium
+The pod is not ready and has been in a non-ready state for over 2 minutes. The logs and metrics do not provide enough information to determine the exact cause.
+model=apple-foundationmodel tool_calls=8 rejected=1 repairs=0 duration=25.8s tokens in/out=23176/1092 stop=diagnosis
