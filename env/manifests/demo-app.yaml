@@ -1,0 +1,152 @@
+# Demo application with two tiers: loadgen -> frontend -> backend (podinfo).
+# This is the "healthy" baseline: every fault scenario changes it, and the reset
+# simply re-applies this file.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+  labels:
+    lab: kursinis
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: demo
+  labels: { app: backend, tier: backend }
+spec:
+  replicas: 2
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels: { app: backend }
+  template:
+    metadata:
+      labels: { app: backend, tier: backend, monitoring: podinfo }
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/stefanprodan/podinfo:6.15.0
+          command: ["./podinfo"]
+          args: ["--port=9898", "--port-metrics=9797", "--level=info"]
+          env:
+            - { name: PODINFO_UI_MESSAGE, value: "backend" }
+          ports:
+            - { name: http, containerPort: 9898 }
+            - { name: http-metrics, containerPort: 9797 }
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 10
+          resources:
+            requests: { cpu: 10m, memory: 32Mi }
+            limits: { memory: 128Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: demo
+  labels: { app: backend, monitoring: podinfo }
+spec:
+  selector: { app: backend }
+  ports:
+    - { name: http, port: 9898, targetPort: http }
+    - { name: http-metrics, port: 9797, targetPort: http-metrics }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: demo
+  labels: { app: frontend, tier: frontend }
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels: { app: frontend }
+  template:
+    metadata:
+      labels: { app: frontend, tier: frontend, monitoring: podinfo }
+    spec:
+      containers:
+        - name: frontend
+          image: ghcr.io/stefanprodan/podinfo:6.15.0
+          command: ["./podinfo"]
+          args:
+            - --port=9898
+            - --port-metrics=9797
+            - --level=info
+            - --backend-url=http://backend.demo.svc.cluster.local:9898/echo
+          env:
+            - { name: PODINFO_UI_MESSAGE, value: "frontend" }
+          ports:
+            - { name: http, containerPort: 9898 }
+            - { name: http-metrics, containerPort: 9797 }
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 10
+          resources:
+            requests: { cpu: 10m, memory: 32Mi }
+            limits: { memory: 128Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: demo
+  labels: { app: frontend, monitoring: podinfo }
+spec:
+  selector: { app: frontend }
+  ports:
+    - { name: http, port: 9898, targetPort: http }
+    - { name: http-metrics, port: 9797, targetPort: http-metrics }
+---
+# Constant traffic (~1 request/s), so that metrics and logs contain real signals.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loadgen
+  namespace: demo
+  labels: { app: loadgen }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: loadgen }
+  template:
+    metadata:
+      labels: { app: loadgen }
+    spec:
+      containers:
+        - name: loadgen
+          image: busybox:1.37
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              while true; do
+                if wget -q -T 2 -O /dev/null --post-data='{"ping":1}' http://frontend.demo.svc.cluster.local:9898/echo; then
+                  echo "$(date -Iseconds) ok"
+                else
+                  echo "$(date -Iseconds) request failed"
+                fi
+                sleep 1
+              done
+          resources:
+            requests: { cpu: 5m, memory: 8Mi }
+            limits: { memory: 32Mi }
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: podinfo
+  namespace: demo
+spec:
+  selector:
+    matchLabels: { monitoring: podinfo }
+  endpoints:
+    - port: http-metrics
+      interval: 15s

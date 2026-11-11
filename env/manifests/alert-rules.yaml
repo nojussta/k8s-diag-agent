@@ -1,0 +1,52 @@
+# Lab alert rules. The expressions mirror the kube-prometheus-stack defaults
+# (KubePodCrashLooping, KubePodNotReady, KubeDeploymentReplicasMismatch), but:
+#   - they are limited to the "demo" namespace;
+#   - they have a short "for" duration (the default 15 min is too long for an experiment);
+#   - they carry the label lab="kursinis", which Alertmanager uses to route them to the agent.
+# The annotations deliberately do not reveal the cause of the fault; the agent has to find it.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: lab-kursinis
+  namespace: monitoring
+  labels:
+    lab: kursinis
+spec:
+  groups:
+    - name: lab.kursinis.workloads
+      rules:
+        - alert: LabPodCrashLooping
+          expr: |
+            max_over_time(kube_pod_container_status_waiting_reason{namespace="demo", reason="CrashLoopBackOff"}[2m]) >= 1
+          for: 1m
+          labels:
+            severity: warning
+            lab: kursinis
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} ({{ $labels.container }}) is crash looping"
+            description: "Container {{ $labels.container }} of pod {{ $labels.namespace }}/{{ $labels.pod }} is in waiting state (reason: CrashLoopBackOff) for at least 1 minute."
+            runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodcrashlooping
+
+        - alert: LabPodNotReady
+          expr: |
+            sum by (namespace, pod) (kube_pod_status_phase{namespace="demo", phase=~"Pending|Unknown|Failed"}) > 0
+          for: 2m
+          labels:
+            severity: warning
+            lab: kursinis
+          annotations:
+            summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} is not ready"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been in a non-ready phase for longer than 2 minutes."
+            runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodnotready
+
+        - alert: LabDeploymentReplicasMismatch
+          expr: |
+            kube_deployment_spec_replicas{namespace="demo"} > kube_deployment_status_replicas_available{namespace="demo"}
+          for: 3m
+          labels:
+            severity: warning
+            lab: kursinis
+          annotations:
+            summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has unavailable replicas"
+            description: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has not matched the expected number of available replicas for 3 minutes."
+            runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubedeploymentreplicasmismatch
