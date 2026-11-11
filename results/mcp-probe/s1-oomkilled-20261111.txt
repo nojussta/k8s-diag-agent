@@ -1,0 +1,40 @@
+tools (10): get_container_logs, get_events, get_node_status, get_pod_status, get_resource_usage, get_rollout_history, get_service_endpoints, list_pods, query_logs, query_metrics
+
+[t1] list_pods              ok=true truncated=false  462 B    11 ms
+
+unhealthiest pod: backend-7b8d9f4db-lgb7f (restarts=4)
+
+[t2] get_pod_status         ok=true truncated=false  718 B     2 ms
+[t3] get_rollout_history    ok=true truncated=false  818 B     8 ms
+[t4] get_events             ok=true truncated=false  716 B     2 ms
+[t5] get_resource_usage     ok=true truncated=false 2277 B    14 ms
+[t6] get_container_logs     ok=true truncated=false    2 B     3 ms
+
+6 MCP calls, 0.04 s
+
+get_pod_status -> backend.lastState
+{
+  "exitCode": 137,
+  "finishedAt": "2026-11-11T07:56:50Z",
+  "reason": "OOMKilled",
+  "startedAt": "2026-11-11T07:56:46Z",
+  "state": "terminated"
+}
+get_rollout_history -> template diff
+[
+  {
+    "container": "backend",
+    "current": [
+      "--port=9898",
+      "--port-metrics=9797",
+      "--level=info",
+      "--stress-memory=256"
+    ],
+    "field": "args",
+    "previous": [
+      "--port=9898",
+      "--port-metrics=9797",
+      "--level=info"
+    ]
+  }
+]
