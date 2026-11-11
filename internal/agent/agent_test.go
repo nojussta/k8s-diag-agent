@@ -196,3 +196,44 @@ func TestParseDiagnosisRules(t *testing.T) {
 		}
 	}
 }
+
+// finalScripted is a model that can also be asked for its final answer.
+type finalScripted struct {
+	scripted
+	final  Step
+	nFinal int
+}
+
+func (f *finalScripted) Final(_ context.Context, h []Turn) (Step, error) {
+	f.nFinal++
+	return f.final, nil
+}
+
+func TestRepeatedDuplicatesForceTheFinalAnswer(t *testing.T) {
+	dup := Step{Calls: []Call{call("g", "get_pod_status", "pod", "a")}}
+	m := &finalScripted{scripted: scripted{steps: []Step{dup, dup, dup, dup, dup}}, final: Step{Text: diag("t1")}}
+	rep, err := newAgent(m, &fakeTools{}).Investigate(context.Background(), `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m.nFinal != 1 || rep.Diagnosis == nil || rep.Metrics.ToolCalls != 1 || rep.Metrics.Rejected != 2 {
+		t.Errorf("finals=%d metrics=%+v diagnosis=%v", m.nFinal, rep.Metrics, rep.Diagnosis)
+	}
+	if m.i != 3 {
+		t.Errorf("the loop must stop asking for calls after %d strikes; model was asked %d times", maxStrikes, m.i)
+	}
+}
+
+func TestCallBudgetForcesTheFinalAnswerWhenTheModelCanFinalize(t *testing.T) {
+	steps := []Step{}
+	for i := 0; i < 5; i++ {
+		steps = append(steps, Step{Calls: []Call{call("g", "get_pod_status", "pod", fmt.Sprint(i))}})
+	}
+	m := &finalScripted{scripted: scripted{steps: steps}, final: Step{Text: diag("t1")}}
+	a := newAgent(m, &fakeTools{})
+	a.Limits = Limits{MaxCalls: 3, Timeout: time.Minute}
+	rep, err := a.Investigate(context.Background(), `{}`)
+	if err != nil || rep.Diagnosis == nil || rep.Metrics.ToolCalls != 3 || m.nFinal != 1 {
+		t.Fatalf("err=%v finals=%d metrics=%+v", err, m.nFinal, rep.Metrics)
+	}
+}
