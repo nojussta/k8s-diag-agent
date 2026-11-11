@@ -15,7 +15,7 @@ GOSRC := go.mod go.sum $(shell find cmd internal -name '*.go')
 GOARCH := $(shell go env GOARCH)
 
 .PHONY: help up cluster repos monitoring logging app receiver rules check scenario summary evidence \
-        alerts grafana prometheus alertmanager status down build test vet
+        alerts grafana prometheus alertmanager status down build test vet probe
 
 help: ## Show the targets
 	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -52,6 +52,11 @@ build: $(LABCTL) ## Build all binaries into build/
 
 $(LABCTL): $(GOSRC)
 	go build -o $(LABCTL) ./cmd/labctl
+	go build -o build/mcp-server ./cmd/mcp-server
+	go build -o build/mcp-probe ./cmd/mcp-probe
+
+probe: build ## MCP server: list the 10 tools and run an investigation using MCP calls only (after make scenario S=... --keep)
+	build/mcp-probe -ns demo
 
 test: ## Go vet and unit tests
 	go vet ./...
