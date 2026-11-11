@@ -1,0 +1,37 @@
+id: s2-bad-image
+title: "Non-existent container image tag (ImagePullBackOff)"
+status: implemented   # injected, detected and reset live (see docs/results.md)
+story: >
+  When a new frontend version is released, the CI system gets the image tag wrong (6.15.99
+  instead of 6.15.0). The new pod cannot pull the image and stays Pending.
+
+inject:
+  - kubectl -n demo set image deployment/frontend frontend=ghcr.io/stefanprodan/podinfo:6.15.99
+
+reset:
+  - kubectl apply -f env/manifests/demo-app.yaml
+  - kubectl -n demo rollout status deployment/frontend --timeout=180s
+
+expected_alert:
+  alertname: LabPodNotReady
+  labels:
+    namespace: demo
+  timeout_seconds: 420
+
+ground_truth:
+  category: ImagePullError
+  component: demo/deployment/frontend (container frontend)
+  root_cause: >
+    The latest frontend revision references a non-existent image tag
+    ghcr.io/stefanprodan/podinfo:6.15.99, so the kubelet cannot pull the image
+    (ErrImagePull / ImagePullBackOff) and the pod stays Pending.
+  key_evidence:
+    - "container state waiting.reason = ImagePullBackOff / ErrImagePull"
+    - "event Failed: ... manifest unknown / not found"
+    - "ReplicaSet template diff: image 6.15.0 -> 6.15.99"
+  match:
+    cause_any: ["ImagePullBackOff", "ErrImagePull", "image", "tag"]
+    component_any: ["frontend"]
+  acceptable_actions:
+    - "roll back to the previous revision (kubectl rollout undo deployment/frontend -n demo)"
+    - "fix the image tag to an existing one"

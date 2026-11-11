@@ -1,0 +1,41 @@
+id: s3-missing-config
+title: "Missing configuration object (CreateContainerConfigError)"
+status: implemented   # injected, detected and reset live (see docs/results.md)
+story: >
+  The new frontend version reads a setting from the ConfigMap "frontend-config", but
+  the ConfigMap was never created in that namespace. The container is not even started.
+
+inject:
+  - >-
+    kubectl -n demo patch deployment frontend --type=json -p='[
+      {"op":"add","path":"/spec/template/spec/containers/0/env/-",
+       "value":{"name":"PODINFO_UI_COLOR","valueFrom":{"configMapKeyRef":{"name":"frontend-config","key":"ui.color"}}}}
+    ]'
+
+reset:
+  - kubectl apply -f env/manifests/demo-app.yaml
+  - kubectl -n demo rollout status deployment/frontend --timeout=180s
+
+expected_alert:
+  alertname: LabPodNotReady
+  labels:
+    namespace: demo
+  timeout_seconds: 420
+
+ground_truth:
+  category: ConfigurationError
+  component: demo/deployment/frontend (container frontend)
+  root_cause: >
+    The latest frontend revision references the ConfigMap "frontend-config" through
+    configMapKeyRef, which does not exist in the demo namespace, so the kubelet cannot
+    create the container (CreateContainerConfigError).
+  key_evidence:
+    - "container state waiting.reason = CreateContainerConfigError"
+    - "event: configmap \"frontend-config\" not found"
+    - "ReplicaSet template diff: env PODINFO_UI_COLOR from frontend-config added"
+  match:
+    cause_any: ["CreateContainerConfigError", "frontend-config", "ConfigMap", "not found"]
+    component_any: ["frontend"]
+  acceptable_actions:
+    - "create the missing ConfigMap frontend-config with the key ui.color"
+    - "roll back to the previous revision (kubectl rollout undo deployment/frontend -n demo)"

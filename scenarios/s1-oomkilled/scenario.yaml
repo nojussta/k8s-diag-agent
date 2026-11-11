@@ -1,0 +1,52 @@
+id: s1-oomkilled
+title: "A new version needs more memory than its limit (OOMKilled -> CrashLoopBackOff)"
+status: implemented   # implemented | planned
+story: >
+  A new backend version is released that loads a data cache into memory on startup
+  (simulated with the podinfo flag --stress-memory=256). The container memory limit is
+  unchanged (128Mi), so the kernel kills the container (OOMKilled) and Kubernetes keeps
+  restarting it (CrashLoopBackOff). Because of the RollingUpdate strategy the old pods
+  keep running, so the service works but the rollout is stuck.
+
+inject:
+  - >-
+    kubectl -n demo patch deployment backend --type=json -p='[
+      {"op":"replace","path":"/spec/template/spec/containers/0/args",
+       "value":["--port=9898","--port-metrics=9797","--level=info","--stress-memory=256"]}
+    ]'
+  - >-
+    kubectl -n demo annotate deployment backend --overwrite
+    kubernetes.io/change-cause="release 2.0: warm in-memory cache on startup"
+
+reset:
+  - kubectl -n demo rollout undo deployment/backend
+  - kubectl apply -f env/manifests/demo-app.yaml
+  - kubectl -n demo annotate deployment backend kubernetes.io/change-cause- || true
+  - kubectl -n demo rollout status deployment/backend --timeout=180s
+
+expected_alert:
+  alertname: LabPodCrashLooping
+  labels:
+    namespace: demo
+    container: backend
+  timeout_seconds: 420
+
+# The correct diagnosis the agent's answer is compared with (evaluation phase).
+ground_truth:
+  category: OOMKilled
+  component: demo/deployment/backend (container backend)
+  root_cause: >
+    The latest backend Deployment revision (release 2.0, extra --stress-memory=256)
+    uses more memory on startup than the 128Mi container limit, so the container
+    is killed with OOMKilled (exit code 137) and enters CrashLoopBackOff.
+  key_evidence:
+    - "lastState.terminated.reason = OOMKilled, exitCode = 137"
+    - "the newest ReplicaSet revision template adds --stress-memory=256 (change-cause: release 2.0)"
+    - "memory limit 128Mi; the previous revision runs without restarts"
+  # Keywords for automatic evaluation: at least one keyword of each group must match.
+  match:
+    cause_any: ["OOMKilled", "out of memory", "OOM", "memory limit"]
+    component_any: ["backend"]
+  acceptable_actions:
+    - "roll back to the previous revision (kubectl rollout undo deployment/backend -n demo)"
+    - "raise the memory limit if the new memory need is justified"
