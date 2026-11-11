@@ -1,0 +1,325 @@
+{
+  "target": {
+    "alertname": "LabPodCrashLooping",
+    "namespace": "demo",
+    "pod": "backend-7b8d9f4db-kmgbx",
+    "container": "backend",
+    "deployment": "",
+    "summary": "Pod demo/backend-7b8d9f4db-kmgbx (backend) is crash looping",
+    "startsAt": "2026-11-04T10:35:35.999Z"
+  },
+  "total_calls": 20,
+  "total_duration_s": 0.06,
+  "actions": [
+    {
+      "id": "A1",
+      "name": "Parse alert and resolve target",
+      "source": "Alert payload + K8s API",
+      "ok": true,
+      "calls": 0,
+      "duration_s": 0,
+      "output": {
+        "alertname": "LabPodCrashLooping",
+        "namespace": "demo",
+        "pod": "backend-7b8d9f4db-kmgbx",
+        "container": "backend",
+        "deployment": "",
+        "summary": "Pod demo/backend-7b8d9f4db-kmgbx (backend) is crash looping",
+        "startsAt": "2026-11-04T10:35:35.999Z"
+      }
+    },
+    {
+      "id": "A2",
+      "name": "Pod and container status",
+      "source": "K8s API: pods",
+      "ok": true,
+      "calls": 1,
+      "duration_s": 0,
+      "output": {
+        "conditions": {
+          "ContainersReady": "False",
+          "Initialized": "True",
+          "PodReadyToStartContainers": "True",
+          "PodScheduled": "True",
+          "Ready": "False"
+        },
+        "containers": [
+          {
+            "image": "ghcr.io/stefanprodan/podinfo:6.15.0",
+            "lastState": {
+              "exitCode": 137,
+              "finishedAt": "2026-11-04T10:34:54Z",
+              "reason": "OOMKilled",
+              "startedAt": "2026-11-04T10:34:54Z",
+              "state": "terminated"
+            },
+            "name": "backend",
+            "ready": false,
+            "restartCount": 3,
+            "state": {
+              "message": "back-off 40s restarting failed container=backend pod=backend-7b8d9f4db-kmgbx_demo(c970a157-db2e-45f3-8d47-1208a7d481a3)",
+              "reason": "CrashLoopBackOff",
+              "state": "waiting"
+            }
+          }
+        ],
+        "node": "kursinis-worker2",
+        "phase": "Running",
+        "resources": {
+          "backend": {
+            "limits": {
+              "memory": "128Mi"
+            },
+            "requests": {
+              "cpu": "10m",
+              "memory": "32Mi"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "A3",
+      "name": "Events for the pod",
+      "source": "K8s API: events",
+      "ok": true,
+      "calls": 1,
+      "duration_s": 0,
+      "output": [
+        "2026-11-04T10:34:19Z Normal Scheduled x1: Successfully assigned demo/backend-7b8d9f4db-kmgbx to kursinis-worker2",
+        "2026-11-04T10:34:54Z Normal Pulled x4: Container image \"ghcr.io/stefanprodan/podinfo:6.15.0\" already present on machine and can be accessed by the pod",
+        "2026-11-04T10:34:54Z Normal Created x4: Container created",
+        "2026-11-04T10:34:54Z Normal Started x4: Container started",
+        "2026-11-04T10:34:54Z Warning Unhealthy x4: Readiness probe failed: Get \"http://10.244.1.12:9898/readyz\": dial tcp 10.244.1.12:9898: connect: connection refused",
+        "2026-11-04T10:34:59Z Warning BackOff x9: Back-off restarting failed container backend in pod backend-7b8d9f4db-kmgbx_demo(c970a157-db2e-45f3-8d47-1208a7d481a3)"
+      ]
+    },
+    {
+      "id": "A4",
+      "name": "Container logs (current and previous)",
+      "source": "K8s API: pods/log",
+      "ok": true,
+      "calls": 2,
+      "duration_s": 0.01,
+      "output": {
+        "current": [],
+        "previous": []
+      }
+    },
+    {
+      "id": "A5",
+      "name": "Owner, rollout history and recent change",
+      "source": "K8s API: replicasets, deployments",
+      "ok": true,
+      "calls": 3,
+      "duration_s": 0.01,
+      "output": {
+        "conditions": [
+          "Available=True (MinimumReplicasAvailable): Deployment has minimum availability.",
+          "Progressing=True (ReplicaSetUpdated): ReplicaSet \"backend-7b8d9f4db\" is progressing."
+        ],
+        "deployment": "backend",
+        "replicas": {
+          "availableReplicas": 2,
+          "readyReplicas": 2,
+          "replicas": 3,
+          "unavailableReplicas": 1,
+          "updatedReplicas": 1
+        },
+        "revisions": [
+          {
+            "change_cause": "release 2.0: warm in-memory cache on startup",
+            "created": "2026-11-04T10:34:19Z",
+            "name": "backend-7b8d9f4db",
+            "replicas": 1,
+            "revision": 2
+          },
+          {
+            "change_cause": null,
+            "created": "2026-11-04T10:33:15Z",
+            "name": "backend-5b97dd7dcb",
+            "replicas": 2,
+            "revision": 1
+          }
+        ],
+        "template_diff_latest_vs_previous": [
+          {
+            "container": "backend",
+            "field": "args",
+            "previous": [
+              "--port=9898",
+              "--port-metrics=9797",
+              "--level=info"
+            ],
+            "current": [
+              "--port=9898",
+              "--port-metrics=9797",
+              "--level=info",
+              "--stress-memory=256"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "A6",
+      "name": "Restarts and last termination reason",
+      "source": "Prometheus (kube-state-metrics)",
+      "ok": true,
+      "calls": 2,
+      "duration_s": 0.01,
+      "output": {
+        "last_terminated_reason": [
+          {
+            "__name__": "kube_pod_container_status_last_terminated_reason",
+            "container": "backend",
+            "endpoint": "http",
+            "instance": "10.244.1.4:8080",
+            "job": "kube-state-metrics",
+            "namespace": "demo",
+            "pod": "backend-7b8d9f4db-kmgbx",
+            "reason": "OOMKilled",
+            "service": "kps-kube-state-metrics",
+            "uid": "c970a157-db2e-45f3-8d47-1208a7d481a3",
+            "value": 1
+          }
+        ],
+        "restarts_15m": [
+          {
+            "container": "backend",
+            "endpoint": "http",
+            "instance": "10.244.1.4:8080",
+            "job": "kube-state-metrics",
+            "namespace": "demo",
+            "pod": "backend-7b8d9f4db-kmgbx",
+            "service": "kps-kube-state-metrics",
+            "uid": "c970a157-db2e-45f3-8d47-1208a7d481a3",
+            "value": 2.2319987200511977
+          }
+        ]
+      }
+    },
+    {
+      "id": "A7",
+      "name": "Resource usage vs. limits",
+      "source": "Prometheus (cAdvisor + kube-state-metrics)",
+      "ok": true,
+      "calls": 3,
+      "duration_s": 0.01,
+      "output": {
+        "cpu_usage_cores_5m": [],
+        "memory_limit_bytes": [
+          {
+            "__name__": "kube_pod_container_resource_limits",
+            "container": "backend",
+            "endpoint": "http",
+            "instance": "10.244.1.4:8080",
+            "job": "kube-state-metrics",
+            "namespace": "demo",
+            "node": "kursinis-worker2",
+            "pod": "backend-7b8d9f4db-kmgbx",
+            "resource": "memory",
+            "service": "kps-kube-state-metrics",
+            "uid": "c970a157-db2e-45f3-8d47-1208a7d481a3",
+            "unit": "byte",
+            "value": 134217728
+          }
+        ],
+        "memory_working_set_max_15m_bytes": []
+      }
+    },
+    {
+      "id": "A8",
+      "name": "Service endpoints of the workload",
+      "source": "K8s API: services, endpointslices",
+      "ok": true,
+      "calls": 2,
+      "duration_s": 0,
+      "output": [
+        {
+          "endpoints": 3,
+          "ready": 2,
+          "service": "backend"
+        }
+      ]
+    },
+    {
+      "id": "A9",
+      "name": "Node conditions",
+      "source": "K8s API: nodes",
+      "ok": true,
+      "calls": 1,
+      "duration_s": 0,
+      "output": {
+        "conditions": {
+          "DiskPressure": "False",
+          "MemoryPressure": "False",
+          "PIDPressure": "False",
+          "Ready": "True"
+        },
+        "node": "kursinis-worker2"
+      }
+    },
+    {
+      "id": "A10",
+      "name": "Log and event history (Loki)",
+      "source": "Loki",
+      "ok": true,
+      "calls": 2,
+      "duration_s": 0.01,
+      "output": {
+        "events": [
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1794 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Unhealthy type=Warning count=1 msg=\"Readiness probe failed: Get \\\"http://10.244.1.12:9898/readyz\\\": dial tcp 10.244.1.12:9898: connect: connection refused\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1793 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Started type=Normal count=1 msg=\"Container started\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1792 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Created type=Normal count=1 msg=\"Container created\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1778 eventRV=1784 reportingcontroller=default-scheduler sourcecomponent=default-scheduler reason=Scheduled type=Normal count=1 msg=\"Successfully assigned demo/backend-7b8d9f4db-kmgbx to kursinis-worker2\" ",
+          "name=backend-7b8d9f4db kind=ReplicaSet objectAPIversion=apps/v1 objectRV=1775 eventRV=1780 reportingcontroller=replicaset-controller sourcecomponent=replicaset-controller reason=SuccessfulCreate type=Normal count=1 msg=\"Created pod: backend-7b8d9f4db-kmgbx\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1790 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Pulled type=Normal count=1 msg=\"Container image \\\"ghcr.io/stefanprodan/podinfo:6.15.0\\\" already present on machine and can be accessed by the pod\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1802 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Unhealthy type=Warning count=2 msg=\"Readiness probe failed: Get \\\"http://10.244.1.12:9898/readyz\\\": dial tcp 10.244.1.12:9898: connect: connection refused\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1801 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Started type=Normal count=2 msg=\"Container started\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1800 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Created type=Normal count=2 msg=\"Container created\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1798 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Pulled type=Normal count=2 msg=\"Container image \\\"ghcr.io/stefanprodan/podinfo:6.15.0\\\" already present on machine and can be accessed by the pod\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1806 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Warning count=1 msg=\"Back-off restarting failed container backend in pod backend-7b8d9f4db-kmgbx_demo(c970a157-db2e-45f3-8d47-1208a7d481a3)\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1809 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Warning count=2 msg=\"Back-off restarting failed container backend in pod backend-7b8d9f4db-kmgbx_demo(c970a157-db2e-45f3-8d47-1208a7d481a3)\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1824 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Warning count=3 msg=\"Back-off restarting failed container backend in pod backend-7b8d9f4db-kmgbx_demo(c970a157-db2e-45f3-8d47-1208a7d481a3)\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1831 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Unhealthy type=Warning count=3 msg=\"Readiness probe failed: Get \\\"http://10.244.1.12:9898/readyz\\\": dial tcp 10.244.1.12:9898: connect: connection refused\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1830 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Started type=Normal count=3 msg=\"Container started\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1828 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Created type=Normal count=3 msg=\"Container created\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1827 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Pulled type=Normal count=3 msg=\"Container image \\\"ghcr.io/stefanprodan/podinfo:6.15.0\\\" already present on machine and can be accessed by the pod\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1833 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Warning count=4 msg=\"Back-off restarting failed container backend in pod backend-7b8d9f4db-kmgbx_demo(c970a157-db2e-45f3-8d47-1208a7d481a3)\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1838 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Warning count=5 msg=\"Back-off restarting failed container backend in pod backend-7b8d9f4db-kmgbx_demo(c970a157-db2e-45f3-8d47-1208a7d481a3)\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1851 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Warning count=6 msg=\"Back-off restarting failed container backend in pod backend-7b8d9f4db-kmgbx_demo(c970a157-db2e-45f3-8d47-1208a7d481a3)\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1879 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Unhealthy type=Warning count=4 msg=\"Readiness probe failed: Get \\\"http://10.244.1.12:9898/readyz\\\": dial tcp 10.244.1.12:9898: connect: connection refused\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1878 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Started type=Normal count=4 msg=\"Container started\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1877 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Created type=Normal count=4 msg=\"Container created\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1876 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Pulled type=Normal count=4 msg=\"Container image \\\"ghcr.io/stefanprodan/podinfo:6.15.0\\\" already present on machine and can be accessed by the pod\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1882 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Warning count=7 msg=\"Back-off restarting failed container backend in pod backend-7b8d9f4db-kmgbx_demo(c970a157-db2e-45f3-8d47-1208a7d481a3)\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1885 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Warning count=8 msg=\"Back-off restarting failed container backend in pod backend-7b8d9f4db-kmgbx_demo(c970a157-db2e-45f3-8d47-1208a7d481a3)\" ",
+          "name=backend-7b8d9f4db-kmgbx kind=Pod objectAPIversion=v1 objectRV=1782 eventRV=1894 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Warning count=9 msg=\"Back-off restarting failed container backend in pod backend-7b8d9f4db-kmgbx_demo(c970a157-db2e-45f3-8d47-1208a7d481a3)\" "
+        ],
+        "pod_logs": []
+      }
+    },
+    {
+      "id": "A11",
+      "name": "Service golden signals (RED)",
+      "source": "Prometheus (application metrics)",
+      "ok": true,
+      "calls": 3,
+      "duration_s": 0.01,
+      "output": {
+        "error_rate_5xx_rps": [],
+        "latency_p95_s": [
+          {
+            "value": 0.00475
+          }
+        ],
+        "request_rate_rps": [
+          {
+            "value": 0.40446032320472813
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "status": "firing",
+  "labels": {
+    "alertname": "LabPodCrashLooping",
+    "container": "backend",
+    "endpoint": "http",
+    "instance": "10.244.1.4:8080",
+    "job": "kube-state-metrics",
+    "lab": "kursinis",
+    "namespace": "demo",
+    "pod": "backend-7b8d9f4db-g4bm9",
+    "prometheus": "monitoring/kps-prometheus",
+    "reason": "CrashLoopBackOff",
+    "service": "kps-kube-state-metrics",
+    "severity": "warning",
+    "uid": "37fdc329-172f-4700-987b-2163fe891d9e"
+  },
+  "annotations": {
+    "description": "Container backend of pod demo/backend-7b8d9f4db-g4bm9 is in waiting state (reason: CrashLoopBackOff) for at least 1 minute.",
+    "runbook_url": "https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubepodcrashlooping",
+    "summary": "Pod demo/backend-7b8d9f4db-g4bm9 (backend) is crash looping"
+  },
+  "startsAt": "2026-11-04T10:39:20.999Z",
+  "endsAt": "0001-01-01T00:00:00Z",
+  "generatorURL": "http://kps-prometheus.monitoring:9090/graph?g0.expr=max_over_time%28kube_pod_container_status_waiting_reason%7Bnamespace%3D%22demo%22%2Creason%3D%22CrashLoopBackOff%22%7D%5B2m%5D%29+%3E%3D+1\u0026g0.tab=1",
+  "fingerprint": "eac6af8abd1cdbeb"
+}
