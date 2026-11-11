@@ -1,0 +1,8 @@
+# Alert receiver image: a static Go binary and no base image
+# (no shell, package manager or interpreter). The binary is compiled by
+# `make receiver` (build/alert-receiver), so building the image needs no network.
+FROM scratch
+COPY build/alert-receiver /alert-receiver
+USER 65532:65532
+EXPOSE 8080
+ENTRYPOINT ["/alert-receiver"]
