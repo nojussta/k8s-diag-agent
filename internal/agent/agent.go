@@ -26,6 +26,10 @@ type Limits struct {
 // DefaultLimits are 15 tool calls and 180 s.
 var DefaultLimits = Limits{MaxCalls: 15, Timeout: 180 * time.Second}
 
+// LocalLimits suit the on-device model: a 4096-token window leaves room for
+// about 8 tool results, and local inference is slower than a hosted API.
+var LocalLimits = Limits{MaxCalls: 8, Timeout: 300 * time.Second}
+
 // Call is one tool call the model asks for.
 type Call struct {
 	ID   string // provider's call id, echoed back with the result
@@ -54,6 +58,18 @@ type Turn struct {
 type Model interface {
 	Next(ctx context.Context, history []Turn) (Step, error)
 }
+
+// Finalizer is an optional Model capability: produce the final diagnosis from
+// the history so far without allowing further tool calls. The orchestrator
+// uses it when the call budget is spent or the model keeps repeating itself,
+// so a small model still ends with an answer (graded by the same validation).
+type Finalizer interface {
+	Final(ctx context.Context, history []Turn) (Step, error)
+}
+
+// maxStrikes is how many consecutive rejected calls (duplicates, tools outside
+// the allow-list) are tolerated before the model is asked to answer.
+const maxStrikes = 2
 
 // Tools is the MCP client side.
 type Tools interface {
@@ -120,11 +136,21 @@ func (a *Agent) Investigate(ctx context.Context, alert string) (Report, error) {
 	history := []Turn{{Role: "user", Content: "Alert (JSON):\n" + alert}}
 	seen := map[[32]byte]string{}
 	executed := map[string]bool{}
-	n := 0
+	n, strikes := 0, 0
+	fin, canFinalize := a.Model.(Finalizer)
+	forceFinal := false
 	a.trace("alert", alert)
 
 	for {
-		step, err := a.Model.Next(ctx, history)
+		var step Step
+		var err error
+		if forceFinal {
+			a.trace("force_final", map[string]any{"tool_calls": m.ToolCalls, "rejected": m.Rejected})
+			step, err = fin.Final(ctx, history)
+			forceFinal = false
+		} else {
+			step, err = a.Model.Next(ctx, history)
+		}
 		if err != nil {
 			reason := "model_error"
 			if errors.Is(ctx.Err(), context.DeadlineExceeded) {
@@ -158,21 +184,27 @@ func (a *Agent) Investigate(ctx context.Context, alert string) (Report, error) {
 		for _, c := range step.Calls {
 			n++
 			id := fmt.Sprintf("t%d", n)
-			if m.ToolCalls >= lim.MaxCalls {
-				return finish("call_budget", nil, fmt.Errorf("call budget of %d exhausted", lim.MaxCalls))
-			}
 			out := ""
 			switch {
+			case m.ToolCalls >= lim.MaxCalls:
+				if !canFinalize {
+					return finish("call_budget", nil, fmt.Errorf("call budget of %d exhausted", lim.MaxCalls))
+				}
+				forceFinal = true
+				out = `{"ok":false,"error":"call budget exhausted; answer now"}`
 			case !a.Allowed[c.Name]:
 				m.Rejected++
+				strikes++
 				out = fmt.Sprintf(`{"ok":false,"error":"tool %q is not allowed"}`, c.Name)
 			default:
 				key := sha256.Sum256([]byte(c.Name + "\x00" + canonical(c.Args)))
 				if prev, dup := seen[key]; dup {
 					m.Rejected++
+					strikes++
 					out = fmt.Sprintf(`{"ok":false,"error":"duplicate call, same as %s; use that result"}`, prev)
 				} else {
 					seen[key] = id
+					strikes = 0
 					m.ToolCalls++
 					executed[id] = true
 					res, err := a.Tools.Call(ctx, c.Name, c.Args)
@@ -184,6 +216,13 @@ func (a *Agent) Investigate(ctx context.Context, alert string) (Report, error) {
 			}
 			a.trace("tool_call", map[string]any{"id": id, "name": c.Name, "args": c.Args, "result_bytes": len(out)})
 			history = append(history, Turn{Role: "tool", CallID: c.ID, Name: c.Name, Content: untrusted(id, out)})
+		}
+		if strikes >= maxStrikes {
+			if canFinalize {
+				forceFinal = true
+			} else if m.Rejected > 2*lim.MaxCalls {
+				return finish("rejected_budget", nil, fmt.Errorf("%d calls rejected; the model keeps repeating itself", m.Rejected))
+			}
 		}
 	}
 }
