@@ -1,0 +1,78 @@
+# kube-prometheus-stack: Prometheus + Alertmanager + Grafana + kube-state-metrics + node-exporter.
+# Settings tuned for a local "kind" cluster and a fast experiment cycle.
+
+# Short service names: kps-prometheus, kps-alertmanager, kps-grafana.
+fullnameOverride: kps
+
+# In a kind cluster the metrics of these components are only reachable on localhost, so
+# their monitoring is disabled; otherwise false "...Down" alerts would fire all the time.
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeProxy:
+  enabled: false
+
+prometheus:
+  prometheusSpec:
+    retention: 2d
+    scrapeInterval: 15s
+    evaluationInterval: 15s
+    # Pick up all ServiceMonitor / PrometheusRule objects, not only those with the Helm "release" label.
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    resources:
+      requests: { cpu: 200m, memory: 512Mi }
+      limits: { memory: 1536Mi }
+
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests: { cpu: 20m, memory: 64Mi }
+  config:
+    global:
+      resolve_timeout: 2m
+    route:
+      receiver: "null"
+      group_by: ["alertname", "namespace"]
+      # Short intervals, so that an alert reaches the receiver within seconds during an experiment.
+      group_wait: 10s
+      group_interval: 30s
+      repeat_interval: 1h
+      routes:
+        # Only alerts from the lab rules (label lab="kursinis") are sent to the agent.
+        # This is deliberate: the agent handles a defined set of alerts, not all the noise.
+        - receiver: diag-agent
+          matchers:
+            - lab = "kursinis"
+          continue: false
+    receivers:
+      - name: "null"
+      - name: diag-agent
+        webhook_configs:
+          - url: http://alert-receiver.diag-agent.svc.cluster.local:8080/alerts
+            send_resolved: true
+            max_alerts: 0
+    inhibit_rules: []
+
+grafana:
+  adminPassword: kursinis
+  defaultDashboardsTimezone: browser
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      uid: loki
+      url: http://loki.logging.svc.cluster.local:3100
+      access: proxy
+      isDefault: false
+
+kube-state-metrics:
+  resources:
+    requests: { cpu: 20m, memory: 64Mi }
+
+prometheus-node-exporter:
+  resources:
+    requests: { cpu: 20m, memory: 32Mi }
