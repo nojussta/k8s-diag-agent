@@ -1,0 +1,95 @@
+# The agent namespace, the alert receiver and read-only permissions.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: diag-agent
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alert-receiver
+  namespace: diag-agent
+  labels: { app: alert-receiver }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: alert-receiver }
+  template:
+    metadata:
+      labels: { app: alert-receiver }
+    spec:
+      containers:
+        - name: receiver
+          # Go binary; the image is built and loaded into kind by `make receiver`.
+          image: diag-agent/alert-receiver:dev
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities: { drop: [ALL] }
+          ports:
+            - { name: http, containerPort: 8080 }
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 5
+          resources:
+            requests: { cpu: 10m, memory: 32Mi }
+            limits: { memory: 128Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alert-receiver
+  namespace: diag-agent
+spec:
+  selector: { app: alert-receiver }
+  ports:
+    - { name: http, port: 8080, targetPort: http }
+---
+# The agent identity. The prototype uses this account, so its permissions
+# are restricted at the Kubernetes RBAC level and not only in the agent code (least privilege).
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: diag-agent
+  namespace: diag-agent
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: diag-agent-readonly
+rules:
+  # Only get/list/watch. No create/update/patch/delete, exec or port-forward.
+  # "secrets" are deliberately excluded: for diagnosis, events saying that a secret does not exist are enough.
+  - apiGroups: [""]
+    resources: [pods, pods/log, events, services, endpoints, nodes, configmaps, namespaces, persistentvolumeclaims]
+    verbs: [get, list, watch]
+  - apiGroups: [apps]
+    resources: [deployments, replicasets, statefulsets, daemonsets]
+    verbs: [get, list, watch]
+  - apiGroups: [batch]
+    resources: [jobs, cronjobs]
+    verbs: [get, list, watch]
+  - apiGroups: [discovery.k8s.io]
+    resources: [endpointslices]
+    verbs: [get, list, watch]
+  - apiGroups: [events.k8s.io]
+    resources: [events]
+    verbs: [get, list, watch]
+  - apiGroups: [metrics.k8s.io]
+    resources: [pods, nodes]
+    verbs: [get, list]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: diag-agent-readonly
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: diag-agent-readonly
+subjects:
+  - kind: ServiceAccount
+    name: diag-agent
+    namespace: diag-agent
