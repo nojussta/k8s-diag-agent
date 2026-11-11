@@ -1,0 +1,8 @@
+.kube/
+build/
+# The global gitignore ignores "ENV/" (virtualenvs), which also matches env/ on macOS.
+!/env/
+
+# Secrets (API keys); the global gitignore also covers this, kept explicit on purpose.
+.env
+!.env.example
