@@ -1,0 +1,4 @@
+provider=apfel model=apple-foundationmodel
+OOMKilled | demo/backend | confidence high
+Pod demo/backend-8698b7497d-w4k29 is in a critical state because the container backend is OOMKilled.
+model=apple-foundationmodel tool_calls=7 rejected=2 repairs=0 duration=28.6s tokens in/out=24858/997 stop=diagnosis

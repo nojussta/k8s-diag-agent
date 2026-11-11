@@ -1,0 +1,42 @@
+{
+  "scenario": "s1-oomkilled",
+  "title": "A new version needs more memory than its limit (OOMKilled -\u003e CrashLoopBackOff)",
+  "started": "2026-11-11T13:22:13+0200",
+  "steps": {
+    "agent": "ok",
+    "baseline": "healthy",
+    "detect": "ok",
+    "evidence": "ok",
+    "reset": "ok"
+  },
+  "t_inject": 1794396133.830147,
+  "t_alert": 1794396232.4921541,
+  "detection_latency_s": 98.7,
+  "alert_labels": {
+    "alertname": "LabPodCrashLooping",
+    "container": "backend",
+    "endpoint": "http",
+    "instance": "10.244.2.2:8080",
+    "job": "kube-state-metrics",
+    "lab": "kursinis",
+    "namespace": "demo",
+    "pod": "backend-8698b7497d-w4k29",
+    "prometheus": "monitoring/kps-prometheus",
+    "reason": "CrashLoopBackOff",
+    "service": "kps-kube-state-metrics",
+    "severity": "warning",
+    "uid": "c4e19532-c7e8-4a07-a8a2-cead45fb8b2c"
+  },
+  "baseline_collection": {
+    "calls": 20,
+    "duration_s": 0.09
+  },
+  "agent": {
+    "exit_code": 0,
+    "duration_s": 29.8,
+    "diagnosed": true,
+    "correct": true,
+    "verdict": "cause and component match"
+  },
+  "finished": "2026-11-11T13:26:33+0200"
+}

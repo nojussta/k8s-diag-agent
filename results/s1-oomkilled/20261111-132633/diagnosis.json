@@ -1,0 +1,35 @@
+{
+  "summary": "Pod demo/backend-8698b7497d-hl2mh is in a crash loop due to OOMKilled.",
+  "root_cause": {
+    "category": "OOMKilled",
+    "component": "demo/backend-8698b7497d-hl2mh",
+    "explanation": "Container backend is terminated with exit code 137 and reason OOMKilled."
+  },
+  "confidence": "medium",
+  "evidence": [
+    {
+      "tool_call": "t1",
+      "source": "Alert",
+      "fact": "Container backend of pod demo/backend-8698b7497d-hl2mh is in waiting state (reason: CrashLoopBackOff) for at least 1 minute."
+    },
+    {
+      "tool_call": "t1",
+      "source": "get_pod_status",
+      "fact": "Container backend is terminated with exit code 137 and reason OOMKilled."
+    },
+    {
+      "tool_call": "t1",
+      "source": "Alert",
+      "fact": "Container backend is waiting for at least 1 minute."
+    }
+  ],
+  "impact": "Pod is in a crash loop.",
+  "next_steps": [
+    {
+      "action": "Check container logs for more details.",
+      "command": "kubectl logs demo/backend-8698b7497d-hl2mh",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

@@ -1,0 +1,35 @@
+{
+  "summary": "Pod demo/backend-8698b7497d-w4k29 is in a critical state because the container backend is OOMKilled.",
+  "root_cause": {
+    "category": "OOMKilled",
+    "component": "demo/backend",
+    "explanation": "Container backend is OOMKilled due to insufficient memory."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "t1",
+      "source": "Alert",
+      "fact": "Container backend of pod demo/backend-8698b7497d-w4k29 is in waiting state (reason: CrashLoopBackOff) for at least 1 minute."
+    },
+    {
+      "tool_call": "t1",
+      "source": "get_pod_status",
+      "fact": "Container backend is terminated with exit code 137 and reason OOMKilled."
+    },
+    {
+      "tool_call": "t1",
+      "source": "get_pod_status",
+      "fact": "Container backend is waiting for at least 1 minute."
+    }
+  ],
+  "impact": "Pod is in a critical state due to OOMKilled.",
+  "next_steps": [
+    {
+      "action": "Check resource limits",
+      "command": "kubectl get pods --namespace demo --selector app=demo/backend",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

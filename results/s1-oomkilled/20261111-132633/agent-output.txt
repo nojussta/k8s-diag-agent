@@ -1,0 +1,4 @@
+provider=apfel model=apple-foundationmodel
+OOMKilled | demo/backend-8698b7497d-hl2mh | confidence medium
+Pod demo/backend-8698b7497d-hl2mh is in a crash loop due to OOMKilled.
+model=apple-foundationmodel tool_calls=6 rejected=2 repairs=0 duration=24.0s tokens in/out=20916/908 stop=diagnosis
