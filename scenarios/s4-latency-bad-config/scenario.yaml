@@ -1,0 +1,57 @@
+id: s4-latency-bad-config
+title: "A frontend release points to a wrong backend port (high latency, all pods healthy)"
+status: implemented
+story: >
+  Release 2.1 of the frontend changes its backend address to port 9899, which the
+  backend Service does not expose. Nothing crashes and no pod restarts: the frontend
+  waits for every backend call until the client gives up (about 2 s), so the alert is
+  about latency. The cause is visible only by combining three sources: the latency
+  metrics, the frontend logs ("backend call failed" with the new URL) and the rollout
+  history (what changed). Pod status and events show nothing wrong, so the rule-based
+  baseline cannot find it.
+
+inject:
+  - >-
+    kubectl -n demo patch deployment frontend --type=json -p='[
+      {"op":"replace","path":"/spec/template/spec/containers/0/args/3",
+       "value":"--backend-url=http://backend.demo.svc.cluster.local:9899/echo"}
+    ]'
+  - >-
+    kubectl -n demo annotate deployment frontend --overwrite
+    kubernetes.io/change-cause="release 2.1: frontend configuration update"
+
+reset:
+  - kubectl apply -f env/manifests/demo-app.yaml
+  - kubectl -n demo annotate deployment frontend kubernetes.io/change-cause- || true
+  - kubectl -n demo rollout status deployment/frontend --timeout=180s
+
+expected_alert:
+  alertname: LabHighLatency
+  labels:
+    namespace: demo
+    service: frontend
+  timeout_seconds: 480
+
+ground_truth:
+  category: ConfigurationError
+  component: demo/deployment/frontend (container frontend)
+  root_cause: >
+    The latest frontend revision (release 2.1) changed --backend-url to port 9899,
+    where the backend Service does not listen. Every frontend call to the backend
+    times out ("backend call failed ... context canceled"), so frontend requests
+    take about 2 s and the backend receives no traffic. All pods stay Running and
+    Ready without restarts.
+  key_evidence:
+    - "frontend logs: backend call failed, url http://backend.demo.svc.cluster.local:9899/echo"
+    - "rollout history of frontend: newest revision changes --backend-url from port 9898 to 9899"
+    - "metrics: frontend p95 latency about 2 s; backend request rate about 0 (probes excluded)"
+    - "backend Service and endpoints expose port 9898 only; backend pods are healthy"
+  match:
+    # Misconfiguration of the caller; "dependency failure" names the symptom but is accepted.
+    category_any: ["ConfigurationError", "DependencyFailure"]
+    component_any: ["frontend"]
+    component_not: ["deployment/backend", "/backend-"]
+    change_any: ["9899", "backend-url"]
+  acceptable_actions:
+    - "roll back the frontend (kubectl rollout undo deployment/frontend -n demo)"
+    - "set --backend-url back to port 9898"

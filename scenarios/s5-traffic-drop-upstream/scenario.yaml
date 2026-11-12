@@ -1,0 +1,55 @@
+id: s5-traffic-drop-upstream
+title: "The same frontend release seen from the backend (traffic drop, cause in another workload)"
+status: implemented
+story: >
+  The same fault as S4, but the investigation starts from a different alert: the
+  backend receives almost no requests. The backend itself is healthy, so the
+  evidence is in another workload, the frontend that calls it. A fixed sequence
+  that inspects only the alerted object cannot reach it; the investigation has to
+  follow the dependency to the caller and find its latest change.
+
+inject:
+  - >-
+    kubectl -n demo patch deployment frontend --type=json -p='[
+      {"op":"replace","path":"/spec/template/spec/containers/0/args/3",
+       "value":"--backend-url=http://backend.demo.svc.cluster.local:9899/echo"}
+    ]'
+  - >-
+    kubectl -n demo annotate deployment frontend --overwrite
+    kubernetes.io/change-cause="release 2.1: frontend configuration update"
+
+reset:
+  - kubectl apply -f env/manifests/demo-app.yaml
+  - kubectl -n demo annotate deployment frontend kubernetes.io/change-cause- || true
+  - kubectl -n demo rollout status deployment/frontend --timeout=180s
+
+expected_alert:
+  alertname: LabTrafficDrop
+  labels:
+    namespace: demo
+    service: backend
+  timeout_seconds: 480
+
+ground_truth:
+  category: ConfigurationError
+  component: demo/deployment/frontend (container frontend)
+  root_cause: >
+    The latest frontend revision (release 2.1) changed --backend-url to port 9899,
+    where the backend Service does not listen. Every frontend call to the backend
+    times out ("backend call failed ... context canceled"), so frontend requests
+    take about 2 s and the backend receives no traffic. All pods stay Running and
+    Ready without restarts.
+  key_evidence:
+    - "frontend logs: backend call failed, url http://backend.demo.svc.cluster.local:9899/echo"
+    - "rollout history of frontend: newest revision changes --backend-url from port 9898 to 9899"
+    - "metrics: frontend p95 latency about 2 s; backend request rate about 0 (probes excluded)"
+    - "backend Service and endpoints expose port 9898 only; backend pods are healthy"
+  match:
+    # Misconfiguration of the caller; "dependency failure" names the symptom but is accepted.
+    category_any: ["ConfigurationError", "DependencyFailure"]
+    component_any: ["frontend"]
+    component_not: ["deployment/backend", "/backend-"]
+    change_any: ["9899", "backend-url"]
+  acceptable_actions:
+    - "roll back the frontend (kubectl rollout undo deployment/frontend -n demo)"
+    - "set --backend-url back to port 9898"

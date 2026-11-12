@@ -1,5 +1,7 @@
-# Lab alert rules. The expressions mirror the kube-prometheus-stack defaults
-# (KubePodCrashLooping, KubePodNotReady, KubeDeploymentReplicasMismatch), but:
+# Lab alert rules. The first three mirror the kube-prometheus-stack defaults
+# (KubePodCrashLooping, KubePodNotReady, KubeDeploymentReplicasMismatch); the
+# last two are service-level RED alerts (latency and request rate of the demo
+# services, from the podinfo metrics), as an SRE team would define them. All:
 #   - they are limited to the "demo" namespace;
 #   - they have a short "for" duration (the default 15 min is too long for an experiment);
 #   - they carry the label lab="kursinis", which Alertmanager uses to route them to the agent.
@@ -50,3 +52,29 @@ spec:
             summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has unavailable replicas"
             description: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has not matched the expected number of available replicas for 3 minutes."
             runbook_url: https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubedeploymentreplicasmismatch
+
+        - alert: LabHighLatency
+          expr: |
+            histogram_quantile(0.95, sum by (namespace, service, le) (
+              rate(http_request_duration_seconds_bucket{namespace="demo", path!~"healthz|readyz"}[2m])
+            )) > 0.5
+          for: 1m
+          labels:
+            severity: warning
+            lab: kursinis
+          annotations:
+            summary: "Service {{ $labels.namespace }}/{{ $labels.service }} is slow"
+            description: "The 95th percentile latency of service {{ $labels.namespace }}/{{ $labels.service }} has been above 500 ms for 1 minute."
+
+        - alert: LabTrafficDrop
+          expr: |
+            sum by (namespace, service) (
+              rate(http_request_duration_seconds_count{namespace="demo", path!~"healthz|readyz"}[2m])
+            ) < 0.2
+          for: 1m
+          labels:
+            severity: warning
+            lab: kursinis
+          annotations:
+            summary: "Service {{ $labels.namespace }}/{{ $labels.service }} receives almost no requests"
+            description: "Service {{ $labels.namespace }}/{{ $labels.service }} has received fewer than 0.2 requests per second (probes excluded) for 1 minute; its normal load is about 1 request per second."
