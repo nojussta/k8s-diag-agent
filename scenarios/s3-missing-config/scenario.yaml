@@ -13,6 +13,8 @@ inject:
     ]'
 
 reset:
+  # apply alone cannot remove a list entry it never set (the added env var), so roll back first
+  - kubectl -n demo rollout undo deployment/frontend
   - kubectl apply -f env/manifests/demo-app.yaml
   - kubectl -n demo rollout status deployment/frontend --timeout=180s
 
@@ -34,8 +36,9 @@ ground_truth:
     - "event: configmap \"frontend-config\" not found"
     - "ReplicaSet template diff: env PODINFO_UI_COLOR from frontend-config added"
   match:
-    cause_any: ["CreateContainerConfigError", "frontend-config", "ConfigMap", "not found"]
+    category_any: ["ConfigurationError"]
     component_any: ["frontend"]
+    change_any: ["frontend-config", "PODINFO_UI_COLOR"]
   acceptable_actions:
     - "create the missing ConfigMap frontend-config with the key ui.color"
     - "roll back to the previous revision (kubectl rollout undo deployment/frontend -n demo)"

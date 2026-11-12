@@ -30,8 +30,9 @@ ground_truth:
     - "event Failed: ... manifest unknown / not found"
     - "ReplicaSet template diff: image 6.15.0 -> 6.15.99"
   match:
-    cause_any: ["ImagePullBackOff", "ErrImagePull", "image", "tag"]
+    category_any: ["ImagePullError"]
     component_any: ["frontend"]
+    change_any: ["6.15.99"]
   acceptable_actions:
     - "roll back to the previous revision (kubectl rollout undo deployment/frontend -n demo)"
     - "fix the image tag to an existing one"

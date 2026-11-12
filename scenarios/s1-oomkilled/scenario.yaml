@@ -43,10 +43,12 @@ ground_truth:
     - "lastState.terminated.reason = OOMKilled, exitCode = 137"
     - "the newest ReplicaSet revision template adds --stress-memory=256 (change-cause: release 2.0)"
     - "memory limit 128Mi; the previous revision runs without restarts"
-  # Keywords for automatic evaluation: at least one keyword of each group must match.
+  # Automatic judge (internal/scenario/judge.go): the diagnosis is correct only
+  # when the category, the component and the triggering change all match.
   match:
-    cause_any: ["OOMKilled", "out of memory", "OOM", "memory limit"]
+    category_any: ["OOMKilled"]
     component_any: ["backend"]
+    change_any: ["stress-memory", "release 2.0", "in-memory cache"]
   acceptable_actions:
     - "roll back to the previous revision (kubectl rollout undo deployment/backend -n demo)"
     - "raise the memory limit if the new memory need is justified"

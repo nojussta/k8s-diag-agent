@@ -3,13 +3,15 @@
 //  1. baseline check - the demo app is healthy and no lab alert is firing;
 //  2. inject         - run the scenario's inject commands (t_inject);
 //  3. detect         - wait until the expected alert reaches the receiver (t_alert);
-//  4. diagnose       - collect evidence with the fixed action set (A1-A11) and,
-//     when an agent command is given, run the agent (t_diagnosis);
+//  4. diagnose       - collect evidence with the fixed action set (A1-A11),
+//     apply the rule-based baseline to it, and run every configured method
+//     (agent loop, pipeline, ...) against the same live fault;
 //  5. reset          - run the scenario's reset commands and wait for health.
 //
 // Results go to results/<scenario>/<timestamp>/: run.json, alert.json,
-// alert-notification.json, evidence.json, evidence.md and (with an agent
-// command) agent-output.txt.
+// alert-notification.json, evidence.json, evidence.md, and one directory per
+// method (rules/, agent/, pipeline/, ...) with diagnosis.json, metrics.json,
+// report.md, notification.json and the method's output.
 package scenario
 
 import (
@@ -26,9 +28,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 
+	"github.com/nojussta/k8s-diag-agent/internal/agent"
 	"github.com/nojussta/k8s-diag-agent/internal/alertmsg"
 	"github.com/nojussta/k8s-diag-agent/internal/evidence"
 	"github.com/nojussta/k8s-diag-agent/internal/lab"
+	"github.com/nojussta/k8s-diag-agent/internal/notify"
+	"github.com/nojussta/k8s-diag-agent/internal/rules"
 )
 
 // Scenario is the content of scenarios/<id>/scenario.yaml.
@@ -58,9 +63,20 @@ type GroundTruth struct {
 	AcceptableActions []string `json:"acceptable_actions"`
 }
 
+// Match holds what the automatic judge looks for (see judge.go).
 type Match struct {
-	CauseAny     []string `json:"cause_any"`
+	// CategoryAny lists the accepted root_cause.category values (default: the
+	// ground-truth category). Compared exactly.
+	CategoryAny []string `json:"category_any"`
+	// ComponentAny: root_cause.component must contain one of these (the
+	// workload that has to be fixed, not the one that raised the alert).
 	ComponentAny []string `json:"component_any"`
+	// ComponentNot: the component must not contain any of these (e.g. the
+	// healthy workload that only raised the alert).
+	ComponentNot []string `json:"component_not"`
+	// ChangeAny: root_cause.explanation or summary must contain one of these
+	// (the change that triggered the fault, e.g. the changed argument).
+	ChangeAny []string `json:"change_any"`
 }
 
 // Load reads one scenario from <root>/scenarios.
@@ -103,10 +119,19 @@ func Matches(a alertmsg.Alert, exp ExpectedAlert) bool {
 	return true
 }
 
+// Method is one diagnosis method run after the fault is detected. Cmd is a
+// shell command template: {alert}, {out} (the method's directory),
+// {evidence} (the fixed sequence's evidence.json) and {notify} (a local chat
+// webhook stand-in that records what the method posts) are substituted.
+type Method struct {
+	Name string
+	Cmd  string
+}
+
 // Options control a run.
 type Options struct {
-	Keep     bool   // do not reset after the run
-	AgentCmd string // command template; {alert} and {out} are substituted
+	Keep    bool // do not reset after the run
+	Methods []Method
 }
 
 // Record is run.json.
@@ -120,8 +145,12 @@ type Record struct {
 	DetectionLatencyS  float64            `json:"detection_latency_s,omitempty"`
 	AlertLabels        map[string]string  `json:"alert_labels,omitempty"`
 	BaselineCollection *BaselineCollected `json:"baseline_collection,omitempty"`
-	Agent              *AgentRun          `json:"agent,omitempty"`
-	Finished           string             `json:"finished"`
+	// Methods holds every diagnosis method of the run, keyed by name
+	// ("rules" always; "agent", "pipeline", ... when configured).
+	Methods map[string]*MethodRun `json:"methods,omitempty"`
+	// Agent is the single-agent record of runs made before methods existed.
+	Agent    *AgentRun `json:"agent,omitempty"`
+	Finished string    `json:"finished"`
 }
 
 type BaselineCollected struct {
@@ -137,44 +166,20 @@ type AgentRun struct {
 	Diagnosed bool   `json:"diagnosed"`
 	Correct   bool   `json:"correct"`
 	Verdict   string `json:"verdict,omitempty"`
+	// Judgement is the three-part verdict (filled by labctl judge for old runs).
+	Judgement *Verdict `json:"judgement,omitempty"`
 }
 
-// Judge compares the agent's diagnosis with the ground truth. The answer is
-// correct when the category equals the expected one or the cause text contains
-// an expected keyword, and the component names an expected component.
-func Judge(gt GroundTruth, diagnosis []byte) (bool, string) {
-	var d struct {
-		Summary   string `json:"summary"`
-		RootCause struct {
-			Category    string `json:"category"`
-			Component   string `json:"component"`
-			Explanation string `json:"explanation"`
-		} `json:"root_cause"`
-	}
-	if err := json.Unmarshal(diagnosis, &d); err != nil {
-		return false, "diagnosis.json unreadable"
-	}
-	anyOf := func(text string, words []string) bool {
-		t := strings.ToLower(text)
-		for _, w := range words {
-			if strings.Contains(t, strings.ToLower(w)) {
-				return true
-			}
-		}
-		return false
-	}
-	cause := d.RootCause.Category == gt.Category ||
-		anyOf(d.RootCause.Category+" "+d.RootCause.Explanation+" "+d.Summary, gt.Match.CauseAny)
-	comp := anyOf(d.RootCause.Component, gt.Match.ComponentAny)
-	switch {
-	case cause && comp:
-		return true, "cause and component match"
-	case !cause && !comp:
-		return false, "neither cause nor component match"
-	case !cause:
-		return false, "cause does not match"
-	}
-	return false, "component does not match"
+// MethodRun is the outcome of one method in one run.
+type MethodRun struct {
+	Cmd       string          `json:"cmd,omitempty"`
+	ExitCode  int             `json:"exit_code"`
+	DurationS float64         `json:"duration_s"` // wall clock of the command
+	Diagnosed bool            `json:"diagnosed"`
+	Judgement *Verdict        `json:"judgement,omitempty"`
+	Rule      string          `json:"rule,omitempty"` // rules: the rule that fired
+	Metrics   json.RawMessage `json:"metrics,omitempty"`
+	Notified  bool            `json:"notified"`
 }
 
 // Runner runs scenarios against the lab.
@@ -376,28 +381,119 @@ func (r *Runner) RunOnce(ctx context.Context, sc *Scenario, opt Options, outDir 
 	rec.Steps["evidence"] = "ok"
 	r.logf("evidence: %d read-only calls, %v s", ev.TotalCalls, ev.TotalDurationS)
 
-	if opt.AgentCmd != "" {
-		cmd := strings.NewReplacer(
-			"{alert}", shellQuote(filepath.Join(outDir, "alert.json")),
-			"{out}", shellQuote(outDir),
-		).Replace(opt.AgentCmd)
-		t0 := time.Now()
-		code, output := r.Lab.Sh(ctx, cmd, 10*time.Minute)
-		rec.Agent = &AgentRun{ExitCode: code, DurationS: round1(time.Since(t0).Seconds())}
-		_ = os.WriteFile(filepath.Join(outDir, "agent-output.txt"), []byte(output), 0o644)
-		rec.Steps["agent"] = "failed"
-		if code == 0 {
-			rec.Steps["agent"] = "ok"
+	rec.Methods = map[string]*MethodRun{}
+	evRaw, _ := json.Marshal(ev)
+	rec.Methods["rules"] = r.runRules(sc, evRaw, filepath.Join(outDir, "rules"), alert.Labels["alertname"])
+	r.logf("rules: %s (%s)", rec.Methods["rules"].Judgement.Text, rec.Methods["rules"].Rule)
+
+	if len(opt.Methods) > 0 {
+		sink, err := StartSink()
+		if err != nil {
+			return rec, err
 		}
-		if b, err := os.ReadFile(filepath.Join(outDir, "diagnosis.json")); err == nil {
-			rec.Agent.Diagnosed = true
-			rec.Agent.Correct, rec.Agent.Verdict = Judge(sc.GroundTruth, b)
-			r.logf("agent diagnosis: %s", rec.Agent.Verdict)
+		defer sink.Close()
+		for _, m := range opt.Methods {
+			rec.Methods[m.Name] = r.runMethod(ctx, sc, m, outDir, sink)
+			rec.Steps[m.Name] = "ok"
+			if rec.Methods[m.Name].ExitCode != 0 {
+				rec.Steps[m.Name] = "failed"
+			}
 		}
-	} else {
-		rec.Steps["agent"] = "skipped (prototype phase)"
 	}
 	return rec, nil
+}
+
+// RerunMethod runs a method again on a recorded run (its alert.json and
+// evidence.json), for methods that need no live cluster such as the pipeline,
+// and returns the new record. The previous method directory is replaced.
+func RerunMethod(ctx context.Context, l *lab.Lab, sc *Scenario, m Method, runDir string) (*MethodRun, error) {
+	if err := os.RemoveAll(filepath.Join(runDir, m.Name)); err != nil {
+		return nil, err
+	}
+	sink, err := StartSink()
+	if err != nil {
+		return nil, err
+	}
+	defer sink.Close()
+	return (&Runner{Lab: l}).runMethod(ctx, sc, m, runDir, sink), nil
+}
+
+// ApplyRules (re)applies the rule-based baseline to a recorded run directory
+// (used when the rules change) and returns the method record.
+func ApplyRules(sc *Scenario, runDir string) (*MethodRun, error) {
+	evRaw, err := os.ReadFile(filepath.Join(runDir, "evidence.json"))
+	if err != nil {
+		return nil, err
+	}
+	alertname := ""
+	if b, err := os.ReadFile(filepath.Join(runDir, "alert.json")); err == nil {
+		var a alertmsg.Alert
+		if json.Unmarshal(b, &a) == nil {
+			alertname = a.Labels["alertname"]
+		}
+	}
+	return (&Runner{}).runRules(sc, evRaw, filepath.Join(runDir, "rules"), alertname), nil
+}
+
+// runRules applies the rule-based baseline to the fixed sequence's evidence.
+func (r *Runner) runRules(sc *Scenario, evRaw []byte, dir, alertname string) *MethodRun {
+	mr := &MethodRun{}
+	_ = os.MkdirAll(dir, 0o755)
+	t0 := time.Now()
+	d, rule, err := rules.Diagnose(evRaw)
+	if err != nil {
+		mr.ExitCode = 1
+		return mr
+	}
+	var ev struct {
+		TotalCalls     int     `json:"total_calls"`
+		TotalDurationS float64 `json:"total_duration_s"`
+	}
+	_ = json.Unmarshal(evRaw, &ev)
+	met := agent.Metrics{Mode: "rules", Model: "none", ToolCalls: ev.TotalCalls, StopReason: "diagnosis",
+		DurationS: ev.TotalDurationS + time.Since(t0).Seconds()}
+	mr.DurationS = round1(met.DurationS)
+	mr.Rule = rule
+	mr.Metrics, _ = json.Marshal(met)
+	_ = writeJSON(filepath.Join(dir, "diagnosis.json"), d)
+	_ = writeJSON(filepath.Join(dir, "metrics.json"), met)
+	_ = os.WriteFile(filepath.Join(dir, "report.md"), []byte(notify.Text(alertname, d, met)), 0o644)
+	b, _ := json.Marshal(d)
+	v := Judge(sc.GroundTruth, b)
+	mr.Diagnosed, mr.Judgement = true, &v
+	return mr
+}
+
+// runMethod runs one external method command against the live fault.
+func (r *Runner) runMethod(ctx context.Context, sc *Scenario, m Method, outDir string, sink *Sink) *MethodRun {
+	dir := filepath.Join(outDir, m.Name)
+	_ = os.MkdirAll(dir, 0o755)
+	cmd := strings.NewReplacer(
+		"{alert}", shellQuote(filepath.Join(outDir, "alert.json")),
+		"{out}", shellQuote(dir),
+		"{evidence}", shellQuote(filepath.Join(outDir, "evidence.json")),
+		"{notify}", shellQuote(sink.URL(m.Name)),
+	).Replace(m.Cmd)
+	r.logf("method %s: running", m.Name)
+	t0 := time.Now()
+	code, output := r.Lab.Sh(ctx, cmd, 10*time.Minute)
+	mr := &MethodRun{Cmd: m.Cmd, ExitCode: code, DurationS: round1(time.Since(t0).Seconds())}
+	_ = os.WriteFile(filepath.Join(dir, "output.txt"), []byte(output), 0o644)
+	if b, err := os.ReadFile(filepath.Join(dir, "metrics.json")); err == nil {
+		mr.Metrics = b
+	}
+	if msgs := sink.Take(m.Name); len(msgs) > 0 {
+		mr.Notified = true
+		_ = writeJSON(filepath.Join(dir, "notification.json"), msgs)
+	}
+	if b, err := os.ReadFile(filepath.Join(dir, "diagnosis.json")); err == nil {
+		v := Judge(sc.GroundTruth, b)
+		mr.Diagnosed, mr.Judgement = true, &v
+		r.logf("method %s: %s (exit %d, %.1f s)", m.Name, v.Text, code, mr.DurationS)
+	} else {
+		r.logf("method %s: no diagnosis (exit %d, %.1f s)", m.Name, code, mr.DurationS)
+	}
+	return mr
 }
 
 func shellQuote(s string) string { return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'" }
