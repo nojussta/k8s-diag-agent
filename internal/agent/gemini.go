@@ -39,6 +39,36 @@ type Gemini struct {
 	Retries int                 // extra attempts on 429/5xx (default 4)
 	Sleep   func(time.Duration) // for tests
 	Backoff func(attempt int) time.Duration
+
+	// MinInterval spaces requests (free tier: 15 requests per minute, so about
+	// 4 s); the pause counts as rate-limit waiting.
+	MinInterval time.Duration
+
+	waited time.Duration // time spent waiting on per-minute rate limits
+	last   time.Time
+}
+
+// WaitedSeconds implements Waiter: the time spent waiting on rate limits,
+// which the orchestrator reports separately from the diagnosis time.
+func (g *Gemini) WaitedSeconds() float64 { return g.waited.Seconds() }
+
+// finalInstruction ends the tool phase when the orchestrator forces an answer.
+const finalInstruction = "The investigation is over: no more tool calls are possible. Give the final diagnosis now as one JSON object that matches the schema, using only the tool results above."
+
+// Final implements Finalizer: the same conversation without tools and with an
+// instruction to answer, so a model that keeps calling tools still ends with
+// a diagnosis (validated like any other).
+func (g *Gemini) Final(ctx context.Context, history []Turn) (Step, error) {
+	h := append(append([]Turn(nil), history...), Turn{Role: "user", Content: finalInstruction})
+	body, err := g.requestWith(h, false)
+	if err != nil {
+		return Step{}, err
+	}
+	raw, err := g.post(ctx, body)
+	if err != nil {
+		return Step{}, err
+	}
+	return parseInteraction(raw)
 }
 
 // NewGemini builds a client with the prototype's defaults.
@@ -58,7 +88,9 @@ func (g *Gemini) endpoint() string {
 }
 
 // request builds the JSON body for one turn of the loop.
-func (g *Gemini) request(history []Turn) ([]byte, error) {
+func (g *Gemini) request(history []Turn) ([]byte, error) { return g.requestWith(history, true) }
+
+func (g *Gemini) requestWith(history []Turn, withTools bool) ([]byte, error) {
 	input := []json.RawMessage{}
 	add := func(v any) {
 		b, _ := json.Marshal(v)
@@ -82,6 +114,9 @@ func (g *Gemini) request(history []Turn) ([]byte, error) {
 	}
 	tools := make([]map[string]any, 0, len(g.Tools))
 	for _, d := range g.Tools {
+		if !withTools {
+			break
+		}
 		tools = append(tools, map[string]any{"type": "function", "name": d.Name, "description": d.Description, "parameters": d.Parameters})
 	}
 	body := map[string]any{
@@ -89,7 +124,9 @@ func (g *Gemini) request(history []Turn) ([]byte, error) {
 		"store":              false,
 		"system_instruction": g.System,
 		"input":              input,
-		"tools":              tools,
+	}
+	if len(tools) > 0 {
+		body["tools"] = tools
 	}
 	if len(g.Schema) > 0 {
 		var schema any
@@ -193,13 +230,29 @@ func (g *Gemini) post(ctx context.Context, body []byte) ([]byte, error) {
 	if retries == 0 {
 		retries = 4
 	}
+	if g.MinInterval > 0 && !g.last.IsZero() {
+		if d := g.MinInterval - time.Since(g.last); d > 0 {
+			g.waited += d
+			select {
+			case <-time.After(d):
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			}
+		}
+	}
+	defer func() { g.last = time.Now() }()
 	var last error
+	var hint time.Duration
 	for attempt := 0; attempt <= retries; attempt++ {
 		if attempt > 0 {
 			d := time.Duration(1<<attempt) * time.Second
 			if g.Backoff != nil {
 				d = g.Backoff(attempt)
 			}
+			if hint > d {
+				d = hint // the server says when the per-minute window frees up
+			}
+			g.waited += d
 			if g.Sleep != nil {
 				g.Sleep(d)
 			} else {
@@ -230,6 +283,7 @@ func (g *Gemini) post(ctx context.Context, body []byte) ([]byte, error) {
 			// Retrying cannot help: the free tier is used up until tomorrow.
 			return nil, fmt.Errorf("gemini: daily quota exhausted: %s", scrub(short(string(data)), g.Key))
 		case resp.StatusCode == http.StatusTooManyRequests || resp.StatusCode >= 500:
+			hint = retryHint(string(data))
 			last = fmt.Errorf("gemini: HTTP %d (will retry): %s", resp.StatusCode, scrub(short(string(data)), g.Key))
 		default:
 			return nil, fmt.Errorf("gemini: HTTP %d: %s", resp.StatusCode, scrub(short(string(data)), g.Key))
@@ -259,3 +313,19 @@ func dailyQuota(body string) bool {
 }
 
 var regexpHours = regexp.MustCompile(`retry in \d+h`)
+
+var retryIn = regexp.MustCompile(`retry in (\d+(?:\.\d+)?)s`)
+
+// retryHint reads "Please retry in 43s" (per-minute limits); at most 65 s.
+func retryHint(body string) time.Duration {
+	m := retryIn.FindStringSubmatch(strings.ToLower(body))
+	if m == nil {
+		return 0
+	}
+	var sec float64
+	fmt.Sscanf(m[1], "%g", &sec)
+	if sec <= 0 || sec > 65 {
+		return 0
+	}
+	return time.Duration((sec + 1) * float64(time.Second))
+}

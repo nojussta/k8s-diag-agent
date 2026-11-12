@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -155,5 +156,40 @@ func TestDailyQuotaFailsFastWithoutRetries(t *testing.T) {
 	_, err := g.Next(context.Background(), []Turn{{Role: "user", Content: "x"}})
 	if err == nil || *n != 1 || !strings.Contains(err.Error(), "daily quota") {
 		t.Errorf("err=%v attempts=%d", err, *n)
+	}
+}
+
+func TestFinalSendsNoToolsAndAsksForTheAnswer(t *testing.T) {
+	g, _ := fakeGemini(t, func(_ int, body map[string]any, _ http.Header) (int, string) {
+		if _, has := body["tools"]; has {
+			t.Errorf("Final must not offer tools: %v", body["tools"])
+		}
+		in := body["input"].([]any)
+		last := in[len(in)-1].(map[string]any)
+		if !strings.Contains(fmt.Sprint(last["content"]), "no more tool calls") {
+			t.Errorf("last input should ask for the answer, got %v", last)
+		}
+		return 200, `{"steps":[{"type":"model_output","content":[{"type":"text","text":"{}"}]}]}`
+	})
+	var _ Finalizer = g
+	if _, err := g.Final(context.Background(), []Turn{{Role: "user", Content: "x"}}); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestPerMinuteLimitWaitsForTheServerHint(t *testing.T) {
+	var slept []time.Duration
+	g, _ := fakeGemini(t, func(n int, _ map[string]any, _ http.Header) (int, string) {
+		if n == 1 {
+			return 429, `{"error":{"message":"Rate limit exceeded (limit: 15 requests per minute). Please retry in 43s"}}`
+		}
+		return 200, callResp
+	})
+	g.Sleep = func(d time.Duration) { slept = append(slept, d) }
+	if _, err := g.Next(context.Background(), []Turn{{Role: "user", Content: "x"}}); err != nil {
+		t.Fatal(err)
+	}
+	if len(slept) != 1 || slept[0] != 44*time.Second || g.WaitedSeconds() != 44 {
+		t.Fatalf("want one 44 s wait recorded, got %v / %v", slept, g.WaitedSeconds())
 	}
 }

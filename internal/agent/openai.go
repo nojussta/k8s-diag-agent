@@ -74,6 +74,19 @@ func NewLocal(baseURL, model string, tools []ToolDef, schema json.RawMessage) *O
 	}
 }
 
+// NewOpenAI builds the client for any other OpenAI-compatible server (Ollama,
+// llama.cpp server, vLLM, LM Studio, a hosted API): ordinary tool turns, the
+// full system prompt, and no window fitting unless contextTokens > 0. This is
+// how the agent runs on Linux or Windows, where the on-device apfel model does
+// not exist.
+func NewOpenAI(baseURL, model, token string, tools []ToolDef, schema json.RawMessage, contextTokens int) *OpenAIChat {
+	return &OpenAIChat{
+		BaseURL: baseURL, Model: model, Token: token, System: SystemPrompt, Tools: tools, Schema: schema,
+		ContextTokens: contextTokens, OutputReserve: 1024, CharsPerToken: 3.0,
+		FinalPrompt: "Give the final diagnosis now as one JSON object that matches the schema.",
+	}
+}
+
 type oaiMessage struct {
 	Role       string          `json:"role"`
 	Content    *string         `json:"content"`
@@ -116,7 +129,9 @@ func (o *OpenAIChat) messages(history []Turn, final bool) ([]oaiMessage, error) 
 }
 
 // noiseLabels are alert fields that cost tokens and never help a diagnosis.
-var noiseLabels = map[string]bool{"uid": true, "prometheus": true, "service": true, "endpoint": true,
+// "service" is dropped only when it names the metrics exporter (pod-level
+// alerts); a service-level alert keeps it, because it is the target.
+var noiseLabels = map[string]bool{"uid": true, "prometheus": true, "endpoint": true,
 	"instance": true, "job": true, "lab": true, "generatorURL": true, "fingerprint": true,
 	"endsAt": true, "runbook_url": true}
 
@@ -137,8 +152,8 @@ func compactAlert(s string) string {
 	}
 	for _, sec := range []string{"labels", "annotations"} {
 		if m, ok := a[sec].(map[string]any); ok {
-			for k := range m {
-				if noiseLabels[k] {
+			for k, v := range m {
+				if noiseLabels[k] || (k == "service" && strings.Contains(fmt.Sprint(v), "kube-state-metrics")) {
 					delete(m, k)
 				}
 			}
@@ -367,7 +382,7 @@ func (o *OpenAIChat) Next(ctx context.Context, history []Turn) (Step, error) {
 	return final, err
 }
 
-var toolOutputID = regexp.MustCompile(`<tool_output id="(t\d+)"`)
+var toolOutputID = regexp.MustCompile(`<tool_output id="((?:t|A)\d+)"`)
 
 // constrainSchema tightens the diagnosis schema for constrained decoding, so
 // that the small model cannot cite a tool call that never ran: every evidence

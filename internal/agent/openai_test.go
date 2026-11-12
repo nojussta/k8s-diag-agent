@@ -232,3 +232,14 @@ func TestConstrainSchemaRestrictsCitationsToRealToolOutputs(t *testing.T) {
 		}
 	}
 }
+
+func TestNewOpenAIUsesOrdinaryToolTurnsAndTheFullPrompt(t *testing.T) {
+	c := NewOpenAI("http://127.0.0.1:1", "llama3.1", "tok", nil, nil, 0)
+	if c.Flatten || c.System != SystemPrompt || c.ContextTokens != 0 || c.Token != "tok" {
+		t.Fatalf("unexpected client config: %+v", c)
+	}
+	msgs, err := c.messages([]Turn{{Role: "user", Content: "Alert (JSON):\n{}"}}, false)
+	if err != nil || len(msgs) != 2 || msgs[0].Role != "system" {
+		t.Fatalf("got %+v, %v", msgs, err)
+	}
+}

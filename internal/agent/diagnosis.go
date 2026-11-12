@@ -7,27 +7,40 @@ import (
 	"strings"
 )
 
-// Diagnosis is the agent's output (docs/schemas/diagnosis.schema.json).
+// Diagnosis is the agent's output (docs/schemas/diagnosis.schema.json). The
+// rule-based baseline (internal/rules) produces the same structure, so every
+// method is judged by the same code.
 type Diagnosis struct {
-	Summary   string `json:"summary"`
-	RootCause struct {
-		Category    string `json:"category"`
-		Component   string `json:"component"`
-		Explanation string `json:"explanation"`
-	} `json:"root_cause"`
-	Confidence string `json:"confidence"`
-	Evidence   []struct {
-		ToolCall string `json:"tool_call"`
-		Source   string `json:"source"`
-		Fact     string `json:"fact"`
-	} `json:"evidence"`
-	Impact    string `json:"impact"`
-	NextSteps []struct {
-		Action                string  `json:"action"`
-		Command               *string `json:"command"`
-		RequiresHumanApproval bool    `json:"requires_human_approval"`
-	} `json:"next_steps"`
-	Unknowns []string `json:"unknowns"`
+	Summary    string         `json:"summary"`
+	RootCause  RootCause      `json:"root_cause"`
+	Confidence string         `json:"confidence"`
+	Evidence   []EvidenceItem `json:"evidence"`
+	Impact     string         `json:"impact"`
+	NextSteps  []NextStep     `json:"next_steps"`
+	Unknowns   []string       `json:"unknowns"`
+}
+
+// RootCause is the cause class, the affected component and the explanation
+// (which should name the triggering change when there is one).
+type RootCause struct {
+	Category    string `json:"category"`
+	Component   string `json:"component"`
+	Explanation string `json:"explanation"`
+}
+
+// EvidenceItem cites the tool call (tN) or fixed-sequence action (AN) whose
+// result shows the fact.
+type EvidenceItem struct {
+	ToolCall string `json:"tool_call"`
+	Source   string `json:"source"`
+	Fact     string `json:"fact"`
+}
+
+// NextStep is a suggestion; a command is never run by the agent.
+type NextStep struct {
+	Action                string  `json:"action"`
+	Command               *string `json:"command"`
+	RequiresHumanApproval bool    `json:"requires_human_approval"`
 }
 
 var categories = map[string]bool{

@@ -86,6 +86,18 @@ type Metrics struct {
 	OutputTokens int     `json:"output_tokens"`
 	StopReason   string  `json:"stop_reason"`
 	Model        string  `json:"model,omitempty"`
+	// ModelSteps counts requests to the model made by the orchestrator (one
+	// step of the local client may internally be two HTTP requests).
+	ModelSteps int    `json:"model_steps"`
+	Mode       string `json:"mode,omitempty"` // agent | pipeline
+	// RateLimitWaitS is time spent waiting on the provider's per-minute rate
+	// limit (included in DurationS; subtract it to compare methods fairly).
+	RateLimitWaitS float64 `json:"rate_limit_wait_s,omitempty"`
+}
+
+// Waiter is an optional Model capability: how long it waited on rate limits.
+type Waiter interface {
+	WaitedSeconds() float64
 }
 
 // Report is the result of one investigation.
@@ -125,10 +137,13 @@ func (a *Agent) Investigate(ctx context.Context, alert string) (Report, error) {
 	defer cancel()
 
 	start := time.Now()
-	m := Metrics{Model: a.ModelName}
+	m := Metrics{Model: a.ModelName, Mode: "agent"}
 	finish := func(reason string, d *Diagnosis, err error) (Report, error) {
 		m.StopReason = reason
 		m.DurationS = time.Since(start).Seconds()
+		if w, ok := a.Model.(Waiter); ok {
+			m.RateLimitWaitS = w.WaitedSeconds()
+		}
 		a.trace("end", m)
 		return Report{Diagnosis: d, Metrics: m}, err
 	}
@@ -151,6 +166,7 @@ func (a *Agent) Investigate(ctx context.Context, alert string) (Report, error) {
 		} else {
 			step, err = a.Model.Next(ctx, history)
 		}
+		m.ModelSteps++
 		if err != nil {
 			reason := "model_error"
 			if errors.Is(ctx.Err(), context.DeadlineExceeded) {
