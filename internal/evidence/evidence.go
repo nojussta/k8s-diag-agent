@@ -62,6 +62,7 @@ type Target struct {
 	Pod        string `json:"pod"`
 	Container  string `json:"container"`
 	Deployment string `json:"deployment"`
+	Service    string `json:"service,omitempty"`
 	Summary    string `json:"summary"`
 	StartsAt   string `json:"startsAt"`
 }
@@ -298,15 +299,31 @@ func (c *collector) pickTarget(ctx context.Context, alert alertmsg.Alert) (Targe
 		Alertname: l["alertname"], Namespace: l["namespace"], Pod: l["pod"], Container: l["container"],
 		Deployment: l["deployment"], Summary: alert.Annotations["summary"], StartsAt: alert.StartsAt,
 	}
-	if t.Pod == "" && t.Deployment != "" {
+	var podSelector string
+	switch {
+	case t.Pod != "":
+	case t.Deployment != "":
 		// Deployment-level alert: inspect its least healthy pod.
 		c.calls++
 		dep, err := c.cs.AppsV1().Deployments(t.Namespace).Get(ctx, t.Deployment, metav1.GetOptions{})
 		if err != nil {
 			return t, err
 		}
+		podSelector = selector(dep)
+	case l["service"] != "":
+		// Service-level alert (e.g. latency or traffic of a service): inspect
+		// the least healthy pod behind the service.
+		t.Service = l["service"]
 		c.calls++
-		pods, err := c.cs.CoreV1().Pods(t.Namespace).List(ctx, metav1.ListOptions{LabelSelector: selector(dep)})
+		svc, err := c.cs.CoreV1().Services(t.Namespace).Get(ctx, t.Service, metav1.GetOptions{})
+		if err != nil {
+			return t, err
+		}
+		podSelector = labels.SelectorFromSet(svc.Spec.Selector).String()
+	}
+	if t.Pod == "" && podSelector != "" {
+		c.calls++
+		pods, err := c.cs.CoreV1().Pods(t.Namespace).List(ctx, metav1.ListOptions{LabelSelector: podSelector})
 		if err != nil {
 			return t, err
 		}
@@ -321,13 +338,18 @@ func (c *collector) pickTarget(ctx context.Context, alert alertmsg.Alert) (Targe
 			return n
 		}
 		items := pods.Items
-		sort.SliceStable(items, func(i, j int) bool { return score(items[i]) > score(items[j]) })
+		sort.SliceStable(items, func(i, j int) bool {
+			if score(items[i]) != score(items[j]) {
+				return score(items[i]) > score(items[j])
+			}
+			return items[i].Name < items[j].Name
+		})
 		if len(items) > 0 {
 			t.Pod = items[0].Name
 		}
 	}
 	if t.Pod == "" {
-		return t, fmt.Errorf("alert has no pod and no deployment label")
+		return t, fmt.Errorf("alert has no pod, deployment or service label")
 	}
 	return t, nil
 }

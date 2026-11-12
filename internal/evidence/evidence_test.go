@@ -157,3 +157,15 @@ func TestMissingTargetIsReported(t *testing.T) {
 		t.Fatal("A1 should fail without pod or deployment label")
 	}
 }
+
+func TestServiceLevelAlertResolvesThePodBehindTheService(t *testing.T) {
+	c := &collector{cs: lab1(), obs: &fakeObs{}}
+	got, err := c.pickTarget(context.Background(), alertmsg.Alert{Labels: map[string]string{
+		"alertname": "LabTrafficDrop", "namespace": "demo", "service": "backend"}})
+	if err != nil || got.Pod != "backend-new-x" || got.Service != "backend" {
+		t.Fatalf("want backend-new-x via service backend, got %+v err=%v", got, err)
+	}
+	if c.calls != 2 {
+		t.Errorf("want 2 calls (service, pods), got %d", c.calls)
+	}
+}
