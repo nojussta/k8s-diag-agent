@@ -1,56 +1,71 @@
-# Results so far
+# Results
 
-Everything below comes from the runs recorded in `results/` (all on a 3-node kind cluster, 2026-11-04 and
-2026-11-11). Sample sizes are tiny. Read this as "the chain works and here is how it behaved", not as accuracy
-figures.
+Everything below comes from the runs recorded in `results/` on a 3-node kind cluster created on 2026-11-12. Every
+run injects one fault, waits for the alert, and then **all methods diagnose the same live fault state**; answers are
+judged by the strict three-part judge (category, component to fix, triggering change; see
+[scenarios.md](scenarios.md)). All methods were run at no cost: the local model runs on the Mac, and Gemini was used on
+its free tier. Regenerate the raw tables with `build/labctl summary --since 20261112`.
 
-## Baseline: fixed evidence collection (no model)
+## Fully correct answers
 
-`make scenario S=s1-oomkilled`, 3 runs: the alert arrives 86.7, 93.1 and 98.9 s after the fault (mean 92.9 s), and
-the fixed action set makes 20 read-only calls in well under a second. It always makes the same 20 calls; the agent's
-point is to need fewer and to explain.
+| Scenario | Rules | Pipeline, local | Agent, local | Pipeline, Gemini | Agent, Gemini |
+|---|---|---|---|---|---|
+| S1 OOMKilled | 6/6 | 0/3 | 0/3 | 3/3 | 3/3 |
+| S2 bad image tag | 6/6 | 0/3 | 2/3 | 3/3 | 3/3 |
+| S3 missing ConfigMap | 6/6 | 0/3 | 1/3 | 3/3 | 3/3 |
+| S4 wrong backend port, latency alert | 0/7 | 0/4 | 0/3 | 3/3 | 3/3 |
+| S5 same fault, traffic-drop alert on the healthy backend | 0/7 | 0/4 | 0/3 | 0/3 | 1/3 |
+| Mean read-only calls | 20.5 | 20.6 | 5.5 | 20.4 | 11.7 |
+| Mean duration, s (rate-limit waits excluded) | 0.1 | 28.0 | 39.9 | 3.3 | 24.3 |
 
-## MCP only, no model
+"Local" is the on-device Apple model through apfel (about 3B parameters, 4096-token window). "Gemini" is
+`gemini-3.1-flash-lite` on the free tier with requests spaced 4.2 s apart (15 requests/minute); the Gemini columns
+count only those runs (from 2026-11-12 03:55, after the forced-final-answer step and the pacing were added). The rule
+baseline runs in every run, so its sample is larger. The local pipeline was re-run offline on the recorded evidence
+(`labctl rerun`) after its compact digest was fixed, so all its runs use the same code; S4 and S5 have one extra
+run there because the re-run also covered the runs made for Gemini.
 
-`results/mcp-probe/s1-oomkilled-20261111.txt`: a scripted client (`cmd/mcp-probe`) got the deciding evidence
-(`lastState.terminated.reason = OOMKilled`, and the changed argument `--stress-memory=256`) in 6 MCP calls instead
-of 20. The calls were chosen by the program, not by a model, so this only shows that the tools return what is
-needed.
+## What it shows
 
-## Agent runs
+- **Known failure classes (S1-S3): the model adds nothing.** Seven if-then rules over the fixed read-only sequence are
+  right every time in under 0.2 s. The hosted model is equally right, slower, and costs tokens.
+- **Combining sources (S4): the model helps, and the pipeline is enough.** Every pod is healthy, so no rule fires
+  (the rules still name the component and the change, but not a category). The hosted model joins the frontend logs
+  ("backend call failed" on port 9899), the latency and the rollout diff: 3/3 for the pipeline, 3/3 for the agent.
+- **Cause in another workload (S5): only the agent can reach it, but it is not reliable yet.** The fixed sequence only
+  inspects the alerted (healthy) backend, so the pipeline never finds the cause; at best it says "Unknown, probably
+  upstream". The agent moved to the frontend's logs in every run, but checked the rollout history only of the backend,
+  whose newest revision holds an unrelated earlier change (the removed `--stress-memory` flag); it was misled by that
+  in two of three runs.
+- **The local model is too weak for the strict judge** (3 fully correct answers out of 32), even with the decisive
+  facts in its input. It remains the private, free option.
 
-| Scenario | Model | Run | Tool calls (rejected) | Time | Tokens in / out | Category (confidence) | Verdict |
-|---|---|---|---|---|---|---|---|
-| S1 | `gemini-3-flash-preview` | 20261111-102848 | 5 (0) | 14.5 s | 21,290 / 1,999 | OOMKilled (high) | correct |
-| S1 | `gemini-3.5-flash` | 20261111-102351 | 4 (0) | 44.3 s | 7,804 / 437 | none, daily quota exhausted (HTTP 429) | agent failed |
-| S1 | apple-foundationmodel (apfel) | 20261111-132213 | 7 (2) | 28.6 s | 24,858 / 997 | OOMKilled (high) | correct |
-| S1 | apple-foundationmodel | 20261111-132633 | 6 (2) | 24.0 s | 20,916 / 908 | OOMKilled (medium) | correct |
-| S1 | apple-foundationmodel | 20261111-133033 | 7 (2) | 29.5 s | 24,797 / 1,072 | OOMKilled (medium) | correct |
-| S2 | apple-foundationmodel | 20261111-133456 | 8 (1) | 25.8 s | 23,176 / 1,092 | Unknown (medium) | wrong |
-| S3 | apple-foundationmodel | 20261111-133820 | 6 (2) | 20.2 s | 17,680 / 806 | ConfigurationError (medium) | correct |
+## Earlier runs, re-judged
 
-The failed Gemini run is kept on purpose as an honest record. The local model costs nothing; the three S1 runs
-used 70,571 input and 2,977 output tokens in total.
+The three local-model S1 runs of 2026-11-11 counted as 3/3 correct under the old, category-only judge. Re-judged with
+`labctl judge`, they are 0/3: none of them called the rollout-history tool, so none named the change. The single
+Gemini S1 run of that day did look at the rollout history and stays correct.
+
+Exploratory Gemini runs on other models (`gemini-3.6-flash`, `gemini-3-flash-preview`) were mostly cut off by the
+free tier's 20-requests-per-day limit and are not in the table; where they answered, they agree with it (S4 pipeline
+correct, S5 pipeline wrong). One run's trace shows the agent moving from the backend to the frontend's pod status,
+rollout history and logs before the quota ended it.
+
+## Other measurements
+
+- Alert detection latency: 100-176 s depending on the alert rule (S1 and S4 about 100 s, S2/S3 about 152 s, S5 about
+  176 s); the fixed sequence takes 19-22 read-only calls in under 0.1 s.
+- Messages: every model answer was delivered to the local chat stand-in (61/61).
+- Automatic path: with `labctl watch` running, an S2 fault injected by hand was picked up from the receiver 2.5 min
+  later, the agent ran and the message was delivered without any manual step (`results/watch/demo-20261112.txt`).
+- Two S3 runs (2026-11-11 and the first of 2026-11-12) did not reset: `kubectl apply` cannot remove the env entry the
+  fault adds. The reset now rolls back first; every later S3 run reset cleanly.
 
 ## Caveats
 
-- **S1 is a development scenario for the local model.** Earlier local attempts (not kept) went wrong: the model saw
-  OOMKilled and still answered NodeProblem; once it marked a command as not needing approval and the validator
-  rejected the answer; one run started on a stale alert for a pod that no longer existed. The category rubric in the
-  local answer prompt was added after that, so 3 of 3 on S1 is not an unbiased estimate. S2 and S3 were run once,
-  after the prompt was fixed, but one run each says little: the model missed S2 (answered Unknown although the pod
-  could not pull its image) and solved S3.
-- **The verdict is lenient** (see [scenarios.md](scenarios.md)): a correct cause word in the explanation counts even if the category label is another one. In the seven runs above every diagnosis that produced an answer also carries the exact ground-truth category, except S2.
-- **"Grounded" means cited, not true.** The validator checks that each evidence item cites a call that ran. The local
-  model sometimes states facts that are in no tool output.
-- **No comparison on equal terms yet.** The Gemini and local runs used different prompts and the Gemini S1 run used a
-  different model from the default; a fair comparison needs the same scenarios, at least three runs each and a frozen
-  prompt.
-
-## Reproduce
-
-```bash
-make up && make check
-make agent-local S=s1-oomkilled N=3
-make summary
-```
+- Three runs per scenario and method are a small sample; the bachelor thesis extends the evaluation.
+- The judge matches keywords; every mismatch was reviewed by hand (two S5 Gemini answers named port 9899 but blamed
+  the backend, correctly judged wrong on the component).
+- "Grounded" means every evidence item cites a call that really ran, not that the quoted fact is true.
+- The prompts are generic and contain no scenario causes. They were revised once (rollout history as a step, related
+  workloads) after the supervisor's review, before S4 and S5 were run.

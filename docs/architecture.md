@@ -20,8 +20,23 @@ flowchart LR
 | Orchestrator | `internal/agent/agent.go` | The investigation loop and all guards (below). Talks to a `Model` and to a `Tools` interface, so both can be faked in tests. |
 | MCP client | `internal/agent/mcpclient.go` | Starts the MCP server, lists its tools, keeps only allow-listed ones and turns them into function declarations for the model. |
 | MCP server | `cmd/mcp-server`, `internal/mcpserver`, `internal/tools` | Exposes the read-only tools over MCP (stdio), using the official Go SDK. |
-| Model clients | `internal/agent/gemini.go`, `openai.go` | Gemini Interactions API, and any OpenAI-compatible server (used for apfel). |
-| Lab | `internal/lab`, `internal/evidence`, `internal/scenario`, `cmd/labctl` | Isolated cluster access, a fixed evidence sequence used as a baseline, scenario runner and judge. |
+| Model clients | `internal/agent/gemini.go`, `openai.go`, `apfel.go` | Gemini Interactions API; the on-device apfel model; any other OpenAI-compatible server (`--provider openai`). |
+| Pipeline | `internal/agent/pipeline.go` | The "fixed sequence + one model call" method (`--mode pipeline`). |
+| Rule baseline | `internal/rules` | Seven if-then rules (R1-R7) over the fixed sequence's evidence; no model. |
+| Report and message | `internal/notify` | Human-readable report (`report.md`) and the Slack-style webhook message to the on-call engineer. |
+| Queue and duplicate filter | `internal/watch`, `labctl watch` | Picks new firing alerts at the receiver, one investigation at a time, 30 min duplicate filter. |
+| Lab | `internal/lab`, `internal/evidence`, `internal/scenario`, `cmd/labctl` | Isolated cluster access, the fixed evidence sequence, scenario runner, three-part judge, local chat stand-in. |
+
+## Three methods, compared on the same fault
+
+| Method | Who collects the data | Who concludes | Model calls |
+|---|---|---|---|
+| `rules` | fixed sequence A1-A11 | rules R1-R7 (known failure classes) | 0 |
+| `pipeline` | fixed sequence A1-A11 | the model, once, no tools | 1 |
+| `agent` | the model, through the 10 MCP tools | the model | 3-15 |
+
+The comparison answers what the model adds: on known classes the rules are as accurate and much faster; only where
+no rule fires (S4, S5) can a model add anything, and only the agent can leave the alerted object (S5).
 
 ## One investigation
 

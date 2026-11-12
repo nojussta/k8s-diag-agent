@@ -15,6 +15,12 @@ when it is installed:
 Nothing about the alert or the cluster leaves the computer, there is no quota, and it works offline. The price is
 a small model with a very small context window.
 
+**It runs only on a Mac:** apfel needs macOS 26 or later, Apple Silicon (M1 or newer) and Apple Intelligence
+enabled. On macOS 26 every Mac has the 4096-token window; on macOS 27, Macs with M3 or newer and 12 GB+ get Apple's
+larger on-device model with 8192 tokens (`apfel --model-info`). On Linux, Windows or a server, use
+`--provider openai` with any OpenAI-compatible server (Ollama, llama.cpp server, vLLM): the same client, with
+ordinary tool turns and no window trimming unless `LLM_CONTEXT_TOKENS` is set.
+
 ## Setup
 
 ```bash
@@ -62,6 +68,11 @@ because early local runs misclassified an OOMKilled pod as NodeProblem. It cover
 scenario, but it was tuned while looking at S1, so S1 numbers for the local model are development results.
 
 ## Known limits
+
+- In the evaluation of 2026-11-12 (five scenarios, see [results.md](results.md)) it was too weak for the strict
+  judge (category, component and triggering change): it rarely names the change, often answers `Unknown`, and in
+  pipeline mode it sometimes picks a category that the data does not support. It remains useful as the private,
+  free option; the accuracy comparison uses a hosted model.
 
 - Accuracy is clearly below hosted models (see [results.md](results.md)). It invents facts now and then, for
   example a node memory limit that is in no tool output. "Evidence is grounded" in this project means that it cites

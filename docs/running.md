@@ -22,10 +22,14 @@ The agent reads these variables (also from `.env` in the repository root, which 
 
 | Variable | Meaning |
 |---|---|
-| `LLM_PROVIDER` | `auto` (default: apfel if installed, else Gemini), `apfel` or `gemini` |
+| `LLM_PROVIDER` | `auto` (default: apfel if installed, else Gemini), `apfel`, `gemini` or `openai` |
 | `GEMINI_API_KEY` | key for the hosted model; sent only in an HTTP header and never printed |
+| `GEMINI_MIN_INTERVAL` | minimum pause between Gemini requests, e.g. `4.2s` for the free tier's 15 requests/minute; reported as `rate_limit_wait_s` and excluded from the compared duration |
 | `GEMINI_MODEL` | Gemini model id (default `gemini-3.5-flash`); the exact id is recorded in every run |
 | `APFEL_URL` | use an apfel server that is already running (default: the agent starts its own on a free loopback port) |
+| `OPENAI_BASE_URL`, `OPENAI_MODEL`, `OPENAI_API_KEY` | provider `openai`: any OpenAI-compatible server (Ollama, llama.cpp server, vLLM), also on Linux/Windows |
+| `LLM_CONTEXT_TOKENS` | provider `openai`: trim tool results to fit this window (0 = no trimming) |
+| `NOTIFY_WEBHOOK_URL` | chat webhook for the report (Slack-style `{"text": ...}`); empty = `report.md` only |
 | `LOCAL_LLM_DUMP` | file that receives every local-model request and response as JSONL (debugging) |
 | `LAB_ROOT` | repository root, if the binaries are run from elsewhere |
 
@@ -41,6 +45,9 @@ make scenario S=s1-oomkilled      # inject the fault, wait for the alert, collec
 make agent S=s1-oomkilled         # same, with the agent (auto provider); N=3 repeats the run
 make agent-local S=s1-oomkilled   # force the local apfel model
 make agent-gemini S=s1-oomkilled  # force Gemini
+make eval S=s4-latency-bad-config N=3         # rules + pipeline + agent loop (local model) on the same fault
+make eval-gemini S=s5-traffic-drop-upstream   # pipeline + agent loop with Gemini (~1 + 5-12 requests per run)
+make watch [P=gemini]             # automatic path: every new alert -> agent -> chat message
 make probe                        # MCP only, no model: list the tools and run a scripted investigation
                                   # (needs a fault left in place: labctl scenario ... --keep)
 make summary                      # results table (Markdown) from results/
@@ -63,24 +70,34 @@ kubectl --context kind-kursinis get pods -n demo
 
 ```
 labctl check
-labctl scenario <id> [--repeat N] [--keep] [--agent-cmd CMD]
+labctl scenario <id> [--repeat N] [--keep] [--method NAME=CMD]...
 labctl evidence (--latest | --alert FILE) [--out DIR]
-labctl summary [scenario ...]
+labctl summary [--since STAMP] [scenario ...]
 labctl alerts
-labctl judge <run-dir>
+labctl judge <run-dir>...
+labctl rules <run-dir>...
+labctl watch --method CMD [--notify URL] [--once]
 ```
 
-- `scenario` runs: baseline check, inject, wait for the alert, collect the fixed evidence, optionally run the agent,
-  reset. `--keep` leaves the fault in place (needed for `make probe`). `--agent-cmd` is a command line in which
-  `{alert}` and `{out}` are replaced by the alert file and the run directory.
-- `judge` compares a run's `diagnosis.json` with the scenario's ground truth (see [scenarios.md](scenarios.md)).
+- `scenario` runs: baseline check, inject, wait for the alert, collect the fixed evidence, apply the rule baseline,
+  run every `--method` against the same fault, judge, reset. `--keep` leaves the fault in place (needed for
+  `make probe`). In a method command `{alert}`, `{out}` (the method's directory), `{evidence}` (the fixed
+  sequence's evidence.json) and `{notify}` (a local stand-in chat webhook that records the message) are replaced.
+  `--agent-cmd CMD` is shorthand for `--method agent=CMD`.
+- `summary` prints the detection table and a per-method table (correct = category, component and change).
+- `judge` re-judges recorded runs; `rules` re-applies the rule baseline (see [scenarios.md](scenarios.md)).
+- `watch` polls the receiver, investigates every new firing lab alert once (30 min duplicate filter, one at a
+  time) and posts the report to `--notify`; without a webhook the messages are printed.
 
 ## Running the agent by hand
 
 ```bash
 make build
-build/agent --alert results/s1-oomkilled/<run>/alert.json --out /tmp/out [--provider apfel|gemini] [--model ID]
+build/agent --alert results/s1-oomkilled/<run>/alert.json --out /tmp/out [--provider apfel|gemini|openai] [--model ID] \
+            [--mode agent|pipeline --evidence results/.../evidence.json] [--notify URL]
 ```
+
+`--mode pipeline` does not use tools: the model gets the fixed sequence's evidence and is called once.
 
 `--alert` takes one Alertmanager alert or a whole webhook payload (the first alert is used). The cluster must be
 reachable through `.kube/config`.
@@ -93,11 +110,10 @@ reachable through `.kube/config`.
 |---|---|
 | `alert.json`, `alert-notification.json` | the alert and the raw webhook notification |
 | `evidence.json`, `evidence.md` | the fixed 20-call evidence collection (baseline) |
-| `diagnosis.json` | the agent's validated answer (absent if the run failed) |
-| `metrics.json` | tool calls, rejected calls, repairs, duration, input/output tokens, stop reason, model id |
-| `trace.jsonl` | one line per event: alert, every tool call (id, name, arguments, result size), forced final, final, end |
-| `agent-output.txt` | the agent's console output |
-| `run.json` | timings (inject, alert, detection latency), the agent's exit code and the judge's verdict |
+| `rules/`, `agent/`, `pipeline/`, ... | one directory per method: `diagnosis.json` (validated answer), `metrics.json` (calls, model steps, duration, tokens, stop reason, model id), `trace.jsonl`, `report.md`, `notification.json` (the message the chat stand-in received), `output.txt` |
+| `run.json` | timings (inject, alert, detection latency) and, per method, exit code, duration, the three-part verdict and whether the message was delivered |
+
+Runs recorded before 2026-11-12 have a single agent's files directly in the run directory (`agent` in `run.json`).
 
 ## Troubleshooting
 
