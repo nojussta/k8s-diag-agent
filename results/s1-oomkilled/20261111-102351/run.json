@@ -33,7 +33,9 @@
   },
   "agent": {
     "exit_code": 1,
-    "duration_s": 44.5
+    "duration_s": 44.5,
+    "diagnosed": false,
+    "correct": false
   },
   "finished": "2026-11-11T10:28:20+0200"
 }

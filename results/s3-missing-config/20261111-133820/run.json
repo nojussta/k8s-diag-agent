@@ -29,7 +29,14 @@
     "duration_s": 20.5,
     "diagnosed": true,
     "correct": true,
-    "verdict": "cause and component match"
+    "verdict": "category, component and change match",
+    "judgement": {
+      "category": true,
+      "component": true,
+      "change": true,
+      "correct": true,
+      "text": "category, component and change match"
+    }
   },
   "finished": "2026-11-11T13:44:06+0200"
 }

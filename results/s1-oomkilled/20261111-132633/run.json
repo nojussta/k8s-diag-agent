@@ -35,8 +35,15 @@
     "exit_code": 0,
     "duration_s": 24.3,
     "diagnosed": true,
-    "correct": true,
-    "verdict": "cause and component match"
+    "correct": false,
+    "verdict": "wrong: change",
+    "judgement": {
+      "category": true,
+      "component": true,
+      "change": false,
+      "correct": false,
+      "text": "wrong: change"
+    }
   },
   "finished": "2026-11-11T13:30:33+0200"
 }
