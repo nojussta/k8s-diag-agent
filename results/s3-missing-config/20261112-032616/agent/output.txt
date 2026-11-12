@@ -1,0 +1,5 @@
+mode=agent provider=apfel model=apple-foundationmodel
+Unknown | demo/frontend | confidence medium
+Pod demo/frontend-6df678c5fd-hgvmg is not ready, but the cause is unclear.
+notification delivered to the webhook
+mode=agent model=apple-foundationmodel tool_calls=6 model_steps=9 rejected=2 repairs=0 duration=42.2s tokens in/out=18196/878 stop=diagnosis

@@ -1,0 +1,5 @@
+mode=pipeline provider=gemini model=gemini-3.1-flash-lite
+ImagePullError | demo/deployment/frontend | confidence high
+The pod 'frontend-68747558f7-fmjrs' is stuck in ImagePullBackOff because it is attempting to pull a non-existent container image 'ghcr.io/stefanprodan/podinfo:6.15.99'.
+notification delivered to the webhook
+mode=pipeline model=gemini-3.1-flash-lite tool_calls=19 model_steps=1 rejected=0 repairs=0 duration=2.5s tokens in/out=5936/566 stop=diagnosis

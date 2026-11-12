@@ -1,0 +1,12 @@
+{
+  "tool_calls": 0,
+  "rejected_calls": 0,
+  "repairs": 0,
+  "duration_s": 19.319144666,
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "stop_reason": "model_error",
+  "model": "gemini-3.6-flash",
+  "model_steps": 1,
+  "mode": "agent"
+}

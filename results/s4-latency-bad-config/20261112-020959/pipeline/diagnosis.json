@@ -1,0 +1,70 @@
+{
+  "summary": "Service demo/frontend is slow due to container OOMKilled.",
+  "root_cause": {
+    "category": "OOMKilled",
+    "component": "frontend",
+    "explanation": "Container OOMKilled"
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A1",
+      "source": "alert",
+      "fact": "Service demo/frontend is slow"
+    },
+    {
+      "tool_call": "A8",
+      "source": "A8",
+      "fact": "Service endpoints of the workload (K8s API: services, endpointslices): [{"
+    },
+    {
+      "tool_call": "A11",
+      "source": "A11",
+      "fact": "Service golden signals (RED) (Prometheus (application metrics)): [{"
+    },
+    {
+      "tool_call": "A2",
+      "source": "A2",
+      "fact": "Pod and container status (...[truncated to fit the 4096-token context])"
+    },
+    {
+      "tool_call": "A3",
+      "source": "A3",
+      "fact": "Events for the pod (K8s AP...[truncated to fit the 4096-token context])"
+    },
+    {
+      "tool_call": "A4",
+      "source": "A4",
+      "fact": "Container logs (current an...[truncated to fit the 4096-token context])"
+    },
+    {
+      "tool_call": "A6",
+      "source": "A6",
+      "fact": "Restarts and last termination reason (Prometheus (kube-state-metrics)): [{"
+    },
+    {
+      "tool_call": "A7",
+      "source": "A7",
+      "fact": "Resource usage vs. limits (Prometheus (cAdvisor + kube-state-metrics)): [{"
+    },
+    {
+      "tool_call": "A10",
+      "source": "A10",
+      "fact": "Log and event history (Loki) (Loki): [{"
+    },
+    {
+      "tool_call": "A9",
+      "source": "A9",
+      "fact": "Node conditions (K8s API: nodes): {"
+    }
+  ],
+  "impact": "High",
+  "next_steps": [
+    {
+      "action": "Review logs for OOMKilled",
+      "command": "kubectl logs frontend-69bd4c6cb4-nn7wk",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

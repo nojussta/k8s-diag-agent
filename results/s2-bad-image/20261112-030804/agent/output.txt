@@ -1,0 +1,5 @@
+mode=agent provider=apfel model=apple-foundationmodel
+Unknown | demo/frontend | confidence medium
+Pod demo/frontend-68747558f7-lpnrh is not ready for 2 minutes. Further investigation is needed to determine the root cause.
+notification delivered to the webhook
+mode=agent model=apple-foundationmodel tool_calls=7 model_steps=11 rejected=3 repairs=0 duration=48.8s tokens in/out=24605/1287 stop=diagnosis

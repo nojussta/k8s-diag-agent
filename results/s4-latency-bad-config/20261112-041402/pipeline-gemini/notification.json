@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-12T02:15:59Z",
+    "text": "Incident triage: LabHighLatency\nProbable cause: ConfigurationError in demo/deployment/frontend (confidence high)\nA recent configuration update (revision 40) changed the --backend-url argument from port 9898 to 9899, which appears to be unreachable or misconfigured, leading to repeated backend call errors and increased latency.\n\nEvidence:\n- [A5 K8s API] Template diff shows --backend-url was updated from '...:9898/echo' to '...:9899/echo' in the latest revision.\n- [A4 Pod logs] Application logs show persistent 'backend call failed' errors with 'context canceled' when attempting to connect to the new backend URL on port 9899.\n- [A11 Prometheus] Service p95 latency is observed at 2.28s, significantly above the 500ms threshold.\n\nSuggested next steps (not executed; a person decides):\n- Roll back the frontend deployment to the previous stable revision (39) to revert the incorrect backend URL configuration.: kubectl rollout undo deployment/frontend -n demo\n- Verify if the backend service 'backend.demo.svc.cluster.local' is actually listening on port 9899.: kubectl get svc backend -n demo\n\nMethod pipeline, model gemini-3.1-flash-lite, 22 read-only calls, 1.9 s.\n"
+  }
+]

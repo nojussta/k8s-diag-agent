@@ -1,0 +1,5 @@
+mode=pipeline provider=gemini model=gemini-3.1-flash-lite
+Unknown | demo/deployment/backend | confidence medium
+The demo/backend service is experiencing a drop in request traffic below the defined alert threshold, although current metrics indicate the service is healthy and receiving a small volume of requests.
+notification delivered to the webhook
+mode=pipeline model=gemini-3.1-flash-lite tool_calls=22 model_steps=1 rejected=0 repairs=0 duration=2.8s tokens in/out=3483/608 stop=diagnosis

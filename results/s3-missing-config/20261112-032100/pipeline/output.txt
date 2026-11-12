@@ -1,0 +1,5 @@
+mode=pipeline provider=apfel model=apple-foundationmodel
+Unknown | Pod demo/frontend-6df678c5fd-fd57f | confidence medium
+Pod demo/frontend-6df678c5fd-fd57f is not ready for 2 minutes. Multiple probes failed, but no specific error message was found.
+notification delivered to the webhook
+mode=pipeline model=apple-foundationmodel tool_calls=19 model_steps=1 rejected=0 repairs=0 duration=59.6s tokens in/out=1201/653 stop=diagnosis

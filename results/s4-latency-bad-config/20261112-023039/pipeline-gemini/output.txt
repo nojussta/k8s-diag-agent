@@ -1,0 +1,5 @@
+mode=pipeline provider=gemini model=gemini-3-flash-preview
+ConfigurationError | demo/deployment/frontend (container frontend) | confidence high
+Service frontend in namespace demo is experiencing high latency (P95 ~2.3s) due to a configuration error where it attempts to connect to the backend on the wrong port (9899 instead of 9898).
+notification delivered to the webhook
+mode=pipeline model=gemini-3-flash-preview tool_calls=22 model_steps=2 rejected=0 repairs=1 duration=9.1s tokens in/out=19520/1984 stop=diagnosis

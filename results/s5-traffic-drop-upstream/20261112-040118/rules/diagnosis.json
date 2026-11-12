@@ -1,0 +1,32 @@
+{
+  "summary": "Unknown in demo/deployment/backend: No rule matched the pod status, events or node conditions. The newest revision (not linked to a rule): revision 7 changed backend args: [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\",\"--stress-memory=256\"] -\u003e [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\"].",
+  "root_cause": {
+    "category": "Unknown",
+    "component": "demo/deployment/backend",
+    "explanation": "No rule matched the pod status, events or node conditions. The newest revision (not linked to a rule): revision 7 changed backend args: [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\",\"--stress-memory=256\"] -\u003e [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\"]."
+  },
+  "confidence": "low",
+  "evidence": [
+    {
+      "tool_call": "A2",
+      "source": "pod status",
+      "fact": "phase=Running; backend restarts=0"
+    },
+    {
+      "tool_call": "A5",
+      "source": "rollout history",
+      "fact": "revision 7 changed backend args: [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\",\"--stress-memory=256\"] -\u003e [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\"]."
+    }
+  ],
+  "impact": "The inspected pod is running and ready.",
+  "next_steps": [
+    {
+      "action": "Investigate manually: no rule covers this case",
+      "command": null,
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": [
+    "the fault is not one of the known failure classes R1-R7"
+  ]
+}

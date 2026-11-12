@@ -1,0 +1,35 @@
+{
+  "summary": "The pod demo/frontend-68747558f7-8bzbd is failing to start because it cannot pull the container image 'ghcr.io/stefanprodan/podinfo:6.15.99'.",
+  "root_cause": {
+    "category": "ImagePullError",
+    "component": "demo/deployment/frontend",
+    "explanation": "The deployment was updated to use image version '6.15.99', which does not exist in the registry."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A2",
+      "source": "K8s API: pods",
+      "fact": "The pod phase is Pending and the container is in 'ImagePullBackOff' state with message 'ghcr.io/stefanprodan/podinfo:6.15.99: not found'."
+    },
+    {
+      "tool_call": "A3",
+      "source": "K8s API: events",
+      "fact": "Multiple events confirm a failure to pull the image: 'Failed to pull image ...: not found'."
+    },
+    {
+      "tool_call": "A5",
+      "source": "K8s API: replicasets, deployments",
+      "fact": "The template diff shows the image was recently updated from '6.15.0' to '6.15.99'."
+    }
+  ],
+  "impact": "One replica of the frontend deployment is unavailable, though the deployment is still partially available through other healthy replicas.",
+  "next_steps": [
+    {
+      "action": "Revert the deployment image to the previous known-good version (6.15.0).",
+      "command": "kubectl set image deployment/frontend frontend=ghcr.io/stefanprodan/podinfo:6.15.0 -n demo",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

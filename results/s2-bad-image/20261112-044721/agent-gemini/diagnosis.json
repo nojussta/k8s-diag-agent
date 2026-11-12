@@ -1,0 +1,35 @@
+{
+  "summary": "The pod 'frontend-68747558f7-zksdv' is stuck in 'ImagePullBackOff' state because the container image 'ghcr.io/stefanprodan/podinfo:6.15.99' does not exist in the registry.",
+  "root_cause": {
+    "category": "ImagePullError",
+    "component": "demo/deployment/frontend (container frontend)",
+    "explanation": "The latest rollout (revision 46) updated the image tag from '6.15.0' to '6.15.99', which is an invalid or non-existent image reference."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "t1",
+      "source": "K8s API: pods",
+      "fact": "Pod 'frontend-68747558f7-zksdv' is in 'Pending' phase with container state 'ImagePullBackOff' and error 'ghcr.io/stefanprodan/podinfo:6.15.99: not found'."
+    },
+    {
+      "tool_call": "t2",
+      "source": "K8s API: events",
+      "fact": "Failed to pull image due to error 'rpc error: code = NotFound'."
+    },
+    {
+      "tool_call": "t3",
+      "source": "K8s API: replicasets, deployments",
+      "fact": "The latest revision (46) changed the image from 'ghcr.io/stefanprodan/podinfo:6.15.0' to 'ghcr.io/stefanprodan/podinfo:6.15.99'."
+    }
+  ],
+  "impact": "One replica of the frontend deployment is failing to start, reducing the total available capacity of the frontend service.",
+  "next_steps": [
+    {
+      "action": "Roll back the frontend deployment to the previous stable revision (45).",
+      "command": "kubectl rollout undo deployment/frontend -n demo --to-revision=45",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

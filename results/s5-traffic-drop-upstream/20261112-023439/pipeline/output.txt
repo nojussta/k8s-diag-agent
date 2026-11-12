@@ -1,0 +1,5 @@
+mode=pipeline provider=apfel model=apple-foundationmodel
+ProbeFailure | backend | confidence high
+Service demo/backend is receiving almost no requests due to a readiness probe failure in the backend container.
+notification delivered to the webhook
+mode=pipeline model=apple-foundationmodel tool_calls=22 model_steps=1 rejected=0 repairs=0 duration=8.0s tokens in/out=1725/350 stop=diagnosis

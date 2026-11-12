@@ -1,0 +1,35 @@
+{
+  "summary": "Pod demo/frontend-68747558f7-qr4m7 is not ready because the image pull failed. Check the image pull logs for more details.",
+  "root_cause": {
+    "category": "ImagePullError",
+    "component": "container frontend",
+    "explanation": "Container frontend is not ready because it is waiting for the image ghcr.io/stefanprodan/podinfo:6.15.99 to be pulled. The image pull failed because it was not found."
+  },
+  "confidence": "medium",
+  "evidence": [
+    {
+      "tool_call": "t1",
+      "source": "alert",
+      "fact": "Pod demo/frontend-68747558f7-qr4m7 is not ready"
+    },
+    {
+      "tool_call": "t2",
+      "source": "alert",
+      "fact": "Container frontend is not ready"
+    },
+    {
+      "tool_call": "t4",
+      "source": "alert",
+      "fact": "Container frontend is not ready"
+    }
+  ],
+  "impact": "Pod demo/frontend-68747558f7-qr4m7 is not ready",
+  "next_steps": [
+    {
+      "action": "Check image pull",
+      "command": null,
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

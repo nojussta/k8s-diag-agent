@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/frontend (container frontend) | confidence high
+Service demo/frontend is reporting high latency due to requests targeting a non-existent port (9899) on the backend service.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=15 model_steps=16 rejected=0 repairs=0 duration=81.0s tokens in/out=96903/1027 stop=diagnosis

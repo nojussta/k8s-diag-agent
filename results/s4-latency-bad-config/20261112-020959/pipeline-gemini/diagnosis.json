@@ -1,0 +1,35 @@
+{
+  "summary": "Service demo/frontend is experiencing high latency due to an invalid backend port configured in revision 6.",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "demo/deployment/frontend",
+    "explanation": "In revision 6, the container argument --backend-url was changed from http://backend.demo.svc.cluster.local:9898/echo to http://backend.demo.svc.cluster.local:9899/echo, causing backend HTTP requests to fail with context canceled errors and increasing response latency."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A5",
+      "source": "K8s API: replicasets, deployments",
+      "fact": "Template diff for deployment frontend shows revision 6 updated --backend-url from http://backend.demo.svc.cluster.local:9898/echo to http://backend.demo.svc.cluster.local:9899/echo."
+    },
+    {
+      "tool_call": "A4",
+      "source": "K8s API: pods/log",
+      "fact": "Container logs show backend call failed error: Post http://backend.demo.svc.cluster.local:9899/echo: context canceled."
+    },
+    {
+      "tool_call": "A11",
+      "source": "Prometheus (application metrics)",
+      "fact": "The 95th percentile latency for frontend is ~2.29 seconds."
+    }
+  ],
+  "impact": "Requests to demo/frontend suffer high latency (~2.29s p95) and backend connection failures.",
+  "next_steps": [
+    {
+      "action": "Roll back deployment frontend to revision 5 to revert the backend URL port back to 9898.",
+      "command": "kubectl rollout undo deployment/frontend -n demo",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

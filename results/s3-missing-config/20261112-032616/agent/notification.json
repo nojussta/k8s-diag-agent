@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-12T01:30:27Z",
+    "text": "Incident triage: LabPodNotReady\nProbable cause: Unknown in demo/frontend (confidence medium)\nPod is not ready, but there is no clear indication of the cause from the available information.\n\nEvidence:\n- [t2 get_pod_status] Pod demo/frontend-6df678c5fd-hgvmg is not ready\n- [t1 alert] Pod demo/frontend-6df678c5fd-hgvmg has been in a non-ready phase for longer than 2 minutes\n- [t3 get_rollout_history] Deployment demo/frontend has minimum replicas available\n\nSuggested next steps (not executed; a person decides):\n- Check Deployment Status: kubectl describe deployment demo/frontend\n\nUnknown: Pod readiness issue not fully resolved\n\nMethod agent, model apple-foundationmodel, 6 read-only calls, 42.2 s.\n"
+  }
+]

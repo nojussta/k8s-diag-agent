@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-12T01:17:20Z",
+    "text": "Incident triage: LabPodNotReady\nProbable cause: ConfigurationError in frontend (confidence medium)\nMissing configmap caused the pod to be in a non-ready state.\n\nEvidence:\n- [t2 get_pod_status] configmap \"frontend-config\" not found\n- [t3 get_rollout_history] Deployment has minimum availability.\n- [t2 get_pod_status] Container ready but configmap missing.\n\nSuggested next steps (not executed; a person decides):\n- Check configmap availability: kubectl get configmap frontend-config\n\nUnknown: Pod is not ready because it cannot start containers.\n\nMethod agent, model apple-foundationmodel, 6 read-only calls, 20.6 s.\n"
+  }
+]

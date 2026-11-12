@@ -1,0 +1,5 @@
+mode=pipeline provider=gemini model=gemini-3-flash-preview
+Unknown | demo/service/backend | confidence low
+The backend service in the demo namespace is experiencing a significant traffic drop, receiving only 0.42 RPS compared to its normal 1.0 RPS baseline. While the backend pods are healthy and ready, logs show no incoming requests reaching the inspected replica.
+notification delivered to the webhook
+mode=pipeline model=gemini-3-flash-preview tool_calls=22 model_steps=1 rejected=0 repairs=0 duration=33.6s tokens in/out=3608/7110 stop=diagnosis

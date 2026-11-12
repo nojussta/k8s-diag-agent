@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ImagePullError | demo/deployment/frontend (container frontend) | confidence high
+The pod 'frontend-68747558f7-zksdv' is stuck in 'ImagePullBackOff' state because the container image 'ghcr.io/stefanprodan/podinfo:6.15.99' does not exist in the registry.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=5 model_steps=6 rejected=0 repairs=0 duration=31.5s tokens in/out=16174/696 stop=diagnosis

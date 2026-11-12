@@ -1,0 +1,5 @@
+mode=pipeline provider=apfel model=apple-foundationmodel
+Scheduling | demo/frontend | confidence high
+Service demo/frontend is slow and has high latency due to scheduling issues.
+notification delivered to the webhook
+mode=pipeline model=apple-foundationmodel tool_calls=22 model_steps=1 rejected=0 repairs=0 duration=27.6s tokens in/out=1380/303 stop=diagnosis

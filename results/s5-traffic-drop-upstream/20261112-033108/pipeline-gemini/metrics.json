@@ -1,0 +1,12 @@
+{
+  "tool_calls": 22,
+  "rejected_calls": 0,
+  "repairs": 0,
+  "duration_s": 2.7931125829999996,
+  "input_tokens": 3483,
+  "output_tokens": 608,
+  "stop_reason": "diagnosis",
+  "model": "gemini-3.1-flash-lite",
+  "model_steps": 1,
+  "mode": "pipeline"
+}

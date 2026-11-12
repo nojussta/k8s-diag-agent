@@ -1,0 +1,128 @@
+{
+  "scenario": "s4-latency-bad-config",
+  "title": "A frontend release points to a wrong backend port (high latency, all pods healthy)",
+  "started": "2026-11-12T03:37:18+0200",
+  "steps": {
+    "agent-gemini": "failed",
+    "baseline": "healthy",
+    "detect": "ok",
+    "evidence": "ok",
+    "pipeline-gemini": "ok",
+    "reset": "ok"
+  },
+  "t_inject": 1794447438.108816,
+  "t_alert": 1794447555.9084013,
+  "detection_latency_s": 117.8,
+  "alert_labels": {
+    "alertname": "LabHighLatency",
+    "lab": "kursinis",
+    "namespace": "demo",
+    "prometheus": "monitoring/kps-prometheus",
+    "service": "frontend",
+    "severity": "warning"
+  },
+  "baseline_collection": {
+    "calls": 22,
+    "duration_s": 0.07
+  },
+  "methods": {
+    "agent-gemini": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider gemini --model gemini-3.1-flash-lite",
+      "exit_code": 1,
+      "duration_s": 21.6,
+      "diagnosed": false,
+      "metrics": {
+        "tool_calls": 15,
+        "rejected_calls": 2,
+        "repairs": 0,
+        "duration_s": 21.522344666,
+        "input_tokens": 124344,
+        "output_tokens": 675,
+        "stop_reason": "call_budget",
+        "model": "gemini-3.1-flash-lite",
+        "model_steps": 18,
+        "mode": "agent"
+      },
+      "notified": false
+    },
+    "pipeline": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider apfel --mode pipeline --evidence {evidence}",
+      "exit_code": 0,
+      "duration_s": 30.9,
+      "diagnosed": true,
+      "judgement": {
+        "category": false,
+        "component": true,
+        "change": false,
+        "correct": false,
+        "text": "wrong: category, change"
+      },
+      "metrics": {
+        "tool_calls": 22,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 30.7799835,
+        "input_tokens": 1378,
+        "output_tokens": 519,
+        "stop_reason": "diagnosis",
+        "model": "apple-foundationmodel",
+        "model_steps": 1,
+        "mode": "pipeline"
+      },
+      "notified": true
+    },
+    "pipeline-gemini": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider gemini --model gemini-3.1-flash-lite --mode pipeline --evidence {evidence}",
+      "exit_code": 0,
+      "duration_s": 2.5,
+      "diagnosed": true,
+      "judgement": {
+        "category": true,
+        "component": true,
+        "change": true,
+        "correct": true,
+        "text": "category, component and change match"
+      },
+      "metrics": {
+        "tool_calls": 22,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 2.555763167,
+        "input_tokens": 9571,
+        "output_tokens": 509,
+        "stop_reason": "diagnosis",
+        "model": "gemini-3.1-flash-lite",
+        "model_steps": 1,
+        "mode": "pipeline"
+      },
+      "notified": true
+    },
+    "rules": {
+      "exit_code": 0,
+      "duration_s": 0.1,
+      "diagnosed": true,
+      "judgement": {
+        "category": false,
+        "component": true,
+        "change": true,
+        "correct": false,
+        "text": "wrong: category"
+      },
+      "rule": "none",
+      "metrics": {
+        "tool_calls": 22,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 0.07089675000000001,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "stop_reason": "diagnosis",
+        "model": "none",
+        "model_steps": 0,
+        "mode": "rules"
+      },
+      "notified": false
+    }
+  },
+  "finished": "2026-11-12T03:41:54+0200"
+}

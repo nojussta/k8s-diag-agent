@@ -1,0 +1,128 @@
+{
+  "scenario": "s5-traffic-drop-upstream",
+  "title": "The same frontend release seen from the backend (traffic drop, cause in another workload)",
+  "started": "2026-11-12T03:31:08+0200",
+  "steps": {
+    "agent-gemini": "failed",
+    "baseline": "healthy",
+    "detect": "ok",
+    "evidence": "ok",
+    "pipeline-gemini": "ok",
+    "reset": "ok"
+  },
+  "t_inject": 1794447068.5557199,
+  "t_alert": 1794447255.9064784,
+  "detection_latency_s": 187.4,
+  "alert_labels": {
+    "alertname": "LabTrafficDrop",
+    "lab": "kursinis",
+    "namespace": "demo",
+    "prometheus": "monitoring/kps-prometheus",
+    "service": "backend",
+    "severity": "warning"
+  },
+  "baseline_collection": {
+    "calls": 22,
+    "duration_s": 0.03
+  },
+  "methods": {
+    "agent-gemini": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider gemini --model gemini-3.1-flash-lite",
+      "exit_code": 1,
+      "duration_s": 55.3,
+      "diagnosed": false,
+      "metrics": {
+        "tool_calls": 14,
+        "rejected_calls": 1,
+        "repairs": 0,
+        "duration_s": 55.252951333,
+        "input_tokens": 92088,
+        "output_tokens": 573,
+        "stop_reason": "model_error",
+        "model": "gemini-3.1-flash-lite",
+        "model_steps": 16,
+        "mode": "agent"
+      },
+      "notified": false
+    },
+    "pipeline": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider apfel --mode pipeline --evidence {evidence}",
+      "exit_code": 0,
+      "duration_s": 11.3,
+      "diagnosed": true,
+      "judgement": {
+        "category": false,
+        "component": false,
+        "change": false,
+        "correct": false,
+        "text": "wrong: category, component, change"
+      },
+      "metrics": {
+        "tool_calls": 22,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 11.073969625,
+        "input_tokens": 1696,
+        "output_tokens": 558,
+        "stop_reason": "diagnosis",
+        "model": "apple-foundationmodel",
+        "model_steps": 1,
+        "mode": "pipeline"
+      },
+      "notified": true
+    },
+    "pipeline-gemini": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider gemini --model gemini-3.1-flash-lite --mode pipeline --evidence {evidence}",
+      "exit_code": 0,
+      "duration_s": 2.8,
+      "diagnosed": true,
+      "judgement": {
+        "category": false,
+        "component": false,
+        "change": false,
+        "correct": false,
+        "text": "wrong: category, component, change"
+      },
+      "metrics": {
+        "tool_calls": 22,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 2.7931125829999996,
+        "input_tokens": 3483,
+        "output_tokens": 608,
+        "stop_reason": "diagnosis",
+        "model": "gemini-3.1-flash-lite",
+        "model_steps": 1,
+        "mode": "pipeline"
+      },
+      "notified": true
+    },
+    "rules": {
+      "exit_code": 0,
+      "duration_s": 0,
+      "diagnosed": true,
+      "judgement": {
+        "category": false,
+        "component": false,
+        "change": false,
+        "correct": false,
+        "text": "wrong: category, component, change"
+      },
+      "rule": "none",
+      "metrics": {
+        "tool_calls": 22,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 0.030909,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "stop_reason": "diagnosis",
+        "model": "none",
+        "model_steps": 0,
+        "mode": "rules"
+      },
+      "notified": false
+    }
+  },
+  "finished": "2026-11-12T03:37:18+0200"
+}

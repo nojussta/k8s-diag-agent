@@ -1,0 +1,19 @@
+{
+  "status": "firing",
+  "labels": {
+    "alertname": "LabHighLatency",
+    "lab": "kursinis",
+    "namespace": "demo",
+    "prometheus": "monitoring/kps-prometheus",
+    "service": "frontend",
+    "severity": "warning"
+  },
+  "annotations": {
+    "description": "The 95th percentile latency of service demo/frontend has been above 500 ms for 1 minute.",
+    "summary": "Service demo/frontend is slow"
+  },
+  "startsAt": "2026-11-12T02:26:15.907Z",
+  "endsAt": "0001-01-01T00:00:00Z",
+  "generatorURL": "http://kps-prometheus.monitoring:9090/graph?g0.expr=histogram_quantile%280.95%2C+sum+by+%28namespace%2C+service%2C+le%29+%28rate%28http_request_duration_seconds_bucket%7Bnamespace%3D%22demo%22%2Cpath%21~%22healthz%7Creadyz%22%7D%5B2m%5D%29%29%29+%3E+0.5\u0026g0.tab=1",
+  "fingerprint": "5fe63815b4f06df0"
+}

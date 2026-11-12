@@ -1,0 +1,44 @@
+{
+  "version": "4",
+  "groupKey": "{}/{lab=\"kursinis\"}:{alertname=\"LabTrafficDrop\", namespace=\"demo\"}",
+  "status": "firing",
+  "receiver": "diag-agent",
+  "groupLabels": {
+    "alertname": "LabTrafficDrop",
+    "namespace": "demo"
+  },
+  "commonLabels": {
+    "alertname": "LabTrafficDrop",
+    "lab": "kursinis",
+    "namespace": "demo",
+    "prometheus": "monitoring/kps-prometheus",
+    "service": "backend",
+    "severity": "warning"
+  },
+  "commonAnnotations": {
+    "description": "Service demo/backend has received fewer than 0.2 requests per second (probes excluded) for 1 minute; its normal load is about 1 request per second.",
+    "summary": "Service demo/backend receives almost no requests"
+  },
+  "externalURL": "http://kps-alertmanager.monitoring:9093",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "LabTrafficDrop",
+        "lab": "kursinis",
+        "namespace": "demo",
+        "prometheus": "monitoring/kps-prometheus",
+        "service": "backend",
+        "severity": "warning"
+      },
+      "annotations": {
+        "description": "Service demo/backend has received fewer than 0.2 requests per second (probes excluded) for 1 minute; its normal load is about 1 request per second.",
+        "summary": "Service demo/backend receives almost no requests"
+      },
+      "startsAt": "2026-11-12T02:04:00.907Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://kps-prometheus.monitoring:9090/graph?g0.expr=sum+by+%28namespace%2C+service%29+%28rate%28http_request_duration_seconds_count%7Bnamespace%3D%22demo%22%2Cpath%21~%22healthz%7Creadyz%22%7D%5B2m%5D%29%29+%3C+0.2\u0026g0.tab=1",
+      "fingerprint": "fc1599f7ef524636"
+    }
+  ]
+}

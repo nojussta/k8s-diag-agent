@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/frontend (container frontend) | confidence high
+The frontend pod is stuck in a Pending state due to a missing ConfigMap.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=8 model_steps=9 rejected=0 repairs=0 duration=50.2s tokens in/out=33528/781 stop=diagnosis

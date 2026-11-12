@@ -1,0 +1,40 @@
+{
+  "summary": "The pod 'frontend-6df678c5fd-df5hj' is failing to start due to a missing ConfigMap 'frontend-config', which was recently added as a dependency in a configuration update.",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "demo/deployment/frontend",
+    "explanation": "A recent configuration update added a dependency on a ConfigMap named 'frontend-config' (via PODINFO_UI_COLOR), but this ConfigMap does not exist in the 'demo' namespace."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A2",
+      "source": "K8s API: pods",
+      "fact": "The pod is in a 'Pending' phase with the container 'frontend' waiting due to 'configmap \"frontend-config\" not found'."
+    },
+    {
+      "tool_call": "A3",
+      "source": "K8s API: events",
+      "fact": "Multiple warning events confirm: 'Error: configmap \"frontend-config\" not found'."
+    },
+    {
+      "tool_call": "A5",
+      "source": "K8s API: deployments",
+      "fact": "Template diff reveals that the latest deployment revision added an environment variable 'PODINFO_UI_COLOR' which references the missing 'frontend-config' ConfigMap."
+    }
+  ],
+  "impact": "One replica of the 'frontend' deployment is unavailable, reducing total capacity, although the service remains partially available via the remaining ready pod.",
+  "next_steps": [
+    {
+      "action": "Create the missing ConfigMap 'frontend-config' in the 'demo' namespace with the required key 'ui.color'.",
+      "command": "kubectl create configmap frontend-config --from-literal=ui.color=blue -n demo",
+      "requires_human_approval": true
+    },
+    {
+      "action": "Alternatively, revert the deployment to a previous revision if the configuration change was unintended.",
+      "command": "kubectl rollout undo deployment/frontend -n demo",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

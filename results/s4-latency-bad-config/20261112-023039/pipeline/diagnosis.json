@@ -1,0 +1,70 @@
+{
+  "summary": "Service demo/frontend is slow and unhealthy due to a readiness probe failure in the container frontend.",
+  "root_cause": {
+    "category": "ProbeFailure",
+    "component": "Pod frontend-69bd4c6cb4-bflbc",
+    "explanation": "Container frontend has a warning for unhealthy readiness probe, indicating that the pod is not ready to accept incoming traffic."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A1",
+      "source": "Alert",
+      "fact": "Service demo/frontend is slow"
+    },
+    {
+      "tool_call": "A2",
+      "source": "Pod and container status",
+      "fact": "Pod frontend-69bd4c6cb4-bflbc is running"
+    },
+    {
+      "tool_call": "A2",
+      "source": "Pod and container status",
+      "fact": "Container frontend is running"
+    },
+    {
+      "tool_call": "A3",
+      "source": "Events for the pod",
+      "fact": "Container frontend has a warning for unhealthy readiness probe"
+    },
+    {
+      "tool_call": "A4",
+      "source": "Container logs",
+      "fact": "Container frontend logs show an error"
+    },
+    {
+      "tool_call": "A6",
+      "source": "Restarts and last termination reason",
+      "fact": "Container frontend has no restarts in the last 15 minutes"
+    },
+    {
+      "tool_call": "A7",
+      "source": "Resource usage vs. limits",
+      "fact": "Container frontend has no CPU usage above limits"
+    },
+    {
+      "tool_call": "A11",
+      "source": "Service golden signals",
+      "fact": "Container frontend has no error rate above 5xx"
+    },
+    {
+      "tool_call": "A10",
+      "source": "Log and event history",
+      "fact": "Pod frontend-69bd4c6cb4-bflbc is not ready"
+    },
+    {
+      "tool_call": "A9",
+      "source": "Node conditions",
+      "fact": "Node conditions are not ready"
+    }
+  ],
+  "impact": "Service demo/frontend is slow and unhealthy.",
+  "next_steps": [
+    {
+      "action": "Review the deployment template for changes",
+      "command": "kubectl describe deployment frontend",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

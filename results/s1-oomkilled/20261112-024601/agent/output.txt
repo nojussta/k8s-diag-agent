@@ -1,0 +1,5 @@
+mode=agent provider=apfel model=apple-foundationmodel
+OOMKilled | backend | confidence high
+Pod demo/backend-7b8d9f4db-4grm2 is in a crash loop due to OOMKilled.
+notification delivered to the webhook
+mode=agent model=apple-foundationmodel tool_calls=7 model_steps=11 rejected=3 repairs=0 duration=27.5s tokens in/out=25138/1069 stop=diagnosis

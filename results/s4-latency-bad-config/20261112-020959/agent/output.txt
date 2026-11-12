@@ -1,0 +1,5 @@
+mode=agent provider=apfel model=apple-foundationmodel
+NodeProblem | node kursinis-worker2 | confidence medium
+Pod is overloaded due to node kursinis-worker2 being overloaded with CPU and memory usage.
+notification delivered to the webhook
+mode=agent model=apple-foundationmodel tool_calls=7 model_steps=10 rejected=2 repairs=0 duration=23.3s tokens in/out=17709/1125 stop=diagnosis

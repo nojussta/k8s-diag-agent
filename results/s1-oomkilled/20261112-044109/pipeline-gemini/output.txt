@@ -1,0 +1,5 @@
+mode=pipeline provider=gemini model=gemini-3.1-flash-lite
+OOMKilled | demo/deployment/backend | confidence high
+The pod 'demo/backend-7b8d9f4db-jbvzs' is failing due to 'OOMKilled' errors, caused by an insufficient memory limit after a configuration change.
+notification delivered to the webhook
+mode=pipeline model=gemini-3.1-flash-lite tool_calls=20 model_steps=1 rejected=0 repairs=0 duration=2.7s tokens in/out=6639/492 stop=diagnosis

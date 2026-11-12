@@ -1,0 +1,109 @@
+{
+  "scenario": "s2-bad-image",
+  "title": "Non-existent container image tag (ImagePullBackOff)",
+  "started": "2026-11-12T03:08:04+0200",
+  "steps": {
+    "agent": "ok",
+    "baseline": "healthy",
+    "detect": "ok",
+    "evidence": "ok",
+    "pipeline": "ok",
+    "reset": "ok"
+  },
+  "t_inject": 1794445684.489793,
+  "t_alert": 1794445845.894583,
+  "detection_latency_s": 161.4,
+  "alert_labels": {
+    "alertname": "LabPodNotReady",
+    "lab": "kursinis",
+    "namespace": "demo",
+    "pod": "frontend-68747558f7-lpnrh",
+    "prometheus": "monitoring/kps-prometheus",
+    "severity": "warning"
+  },
+  "baseline_collection": {
+    "calls": 19,
+    "duration_s": 0.04
+  },
+  "methods": {
+    "agent": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider apfel",
+      "exit_code": 0,
+      "duration_s": 49.1,
+      "diagnosed": true,
+      "judgement": {
+        "category": false,
+        "component": true,
+        "change": false,
+        "correct": false,
+        "text": "wrong: category, change"
+      },
+      "metrics": {
+        "tool_calls": 7,
+        "rejected_calls": 3,
+        "repairs": 0,
+        "duration_s": 48.80753125,
+        "input_tokens": 24605,
+        "output_tokens": 1287,
+        "stop_reason": "diagnosis",
+        "model": "apple-foundationmodel",
+        "model_steps": 11,
+        "mode": "agent"
+      },
+      "notified": true
+    },
+    "pipeline": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider apfel --mode pipeline --evidence {evidence}",
+      "exit_code": 0,
+      "duration_s": 56.8,
+      "diagnosed": true,
+      "judgement": {
+        "category": false,
+        "component": true,
+        "change": false,
+        "correct": false,
+        "text": "wrong: category, change"
+      },
+      "metrics": {
+        "tool_calls": 19,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 56.59941625,
+        "input_tokens": 1204,
+        "output_tokens": 698,
+        "stop_reason": "diagnosis",
+        "model": "apple-foundationmodel",
+        "model_steps": 1,
+        "mode": "pipeline"
+      },
+      "notified": true
+    },
+    "rules": {
+      "exit_code": 0,
+      "duration_s": 0,
+      "diagnosed": true,
+      "judgement": {
+        "category": true,
+        "component": true,
+        "change": true,
+        "correct": true,
+        "text": "category, component and change match"
+      },
+      "rule": "R2",
+      "metrics": {
+        "tool_calls": 19,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 0.040280292,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "stop_reason": "diagnosis",
+        "model": "none",
+        "model_steps": 0,
+        "mode": "rules"
+      },
+      "notified": false
+    }
+  },
+  "finished": "2026-11-12T03:13:23+0200"
+}

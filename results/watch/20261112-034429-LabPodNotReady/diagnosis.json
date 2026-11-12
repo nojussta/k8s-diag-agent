@@ -1,0 +1,52 @@
+{
+  "summary": "Pod demo/frontend-68747558f7-75vz2 is not ready for 2 minutes. There is no clear evidence of a specific issue causing this. Further investigation is needed to determine the root cause.",
+  "root_cause": {
+    "category": "Unknown",
+    "component": "demo/frontend",
+    "explanation": "Pod demo/frontend-68747558f7-75vz2 has been in a non-ready phase for longer than 2 minutes. There is no clear evidence of a specific issue causing this. Further investigation is needed to determine the root cause."
+  },
+  "confidence": "medium",
+  "evidence": [
+    {
+      "tool_call": "t3",
+      "source": "get_pod_status",
+      "fact": "Pod demo/frontend-68747558f7-75vz2 has been in a non-ready phase for longer than 2 minutes."
+    },
+    {
+      "tool_call": "t3",
+      "source": "get_pod_status",
+      "fact": "Pod demo/frontend-68747558f7-75vz2 is not ready."
+    },
+    {
+      "tool_call": "t4",
+      "source": "get_rollout_history",
+      "fact": "Pod demo/frontend-68747558f7-75vz2 has been in a non-ready phase for longer than 2 minutes."
+    },
+    {
+      "tool_call": "t5",
+      "source": "query_logs",
+      "fact": "Pod demo/frontend-68747558f7-75vz2 has been in a non-ready phase for longer than 2 minutes."
+    },
+    {
+      "tool_call": "t6",
+      "source": "query_metrics",
+      "fact": "Pod demo/frontend-68747558f7-75vz2 has been in a non-ready phase for longer than 2 minutes."
+    },
+    {
+      "tool_call": "t8",
+      "source": "get_service_endpoints",
+      "fact": "Pod demo/frontend-68747558f7-75vz2 has been in a non-ready phase for longer than 2 minutes."
+    }
+  ],
+  "impact": "Pod is not ready",
+  "next_steps": [
+    {
+      "action": "Check Deployment",
+      "command": "kubectl describe deployment demo/frontend",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": [
+    "Pod demo/frontend-68747558f7-75vz2 has been in a non-ready phase for longer than 2 minutes. There is no clear evidence of a specific issue causing this. Further investigation is needed to determine the root cause."
+  ]
+}

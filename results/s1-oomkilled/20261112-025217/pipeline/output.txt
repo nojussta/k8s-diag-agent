@@ -1,0 +1,5 @@
+mode=pipeline provider=apfel model=apple-foundationmodel
+ApplicationCrash | backend | confidence medium
+Pod is in a crash loop, likely due to a crash in the backend container.
+notification delivered to the webhook
+mode=pipeline model=apple-foundationmodel tool_calls=20 model_steps=1 rejected=0 repairs=0 duration=26.8s tokens in/out=1391/325 stop=diagnosis

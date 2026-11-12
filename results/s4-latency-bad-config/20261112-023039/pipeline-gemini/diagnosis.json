@@ -1,0 +1,40 @@
+{
+  "summary": "Service frontend in namespace demo is experiencing high latency (P95 ~2.3s) due to a configuration error where it attempts to connect to the backend on the wrong port (9899 instead of 9898).",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "demo/deployment/frontend (container frontend)",
+    "explanation": "The deployment was updated in revision 12, changing the --backend-url argument from port 9898 to 9899, which is causing request timeouts/cancellations as seen in the application logs."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A5",
+      "source": "K8s API: replicasets, deployments",
+      "fact": "Template diff shows revision 12 changed '--backend-url=http://backend.demo.svc.cluster.local:9898/echo' to '--backend-url=http://backend.demo.svc.cluster.local:9899/echo'"
+    },
+    {
+      "tool_call": "A4",
+      "source": "K8s API: pods/log",
+      "fact": "Logs show multiple 'backend call failed' errors with 'context canceled' when calling 'http://backend.demo.svc.cluster.local:9899/echo'"
+    },
+    {
+      "tool_call": "A11",
+      "source": "Prometheus (application metrics)",
+      "fact": "The 95th percentile latency is measured at 2.29 seconds, well above the 500ms threshold"
+    }
+  ],
+  "impact": "Users of the frontend service are experiencing delays of over 2 seconds per request, likely resulting in failed or extremely slow page loads.",
+  "next_steps": [
+    {
+      "action": "Roll back the frontend deployment to the previous known-good revision (11).",
+      "command": "kubectl rollout undo deployment/frontend -n demo --to-revision=11",
+      "requires_human_approval": true
+    },
+    {
+      "action": "Verify the current backend service configuration to confirm the correct listening port.",
+      "command": "kubectl get svc backend -n demo",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

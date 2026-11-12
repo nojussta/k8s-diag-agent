@@ -1,0 +1,65 @@
+{
+  "summary": "Container backend of pod demo/backend-7b8d9f4db-qgxx8 is in a terminated state with exit code 137, indicating a crash. Immediate action is required to restart the container.",
+  "root_cause": {
+    "category": "ApplicationCrash",
+    "component": "backend",
+    "explanation": "Container backend is OOMKilled with exit code 137, and logs show a crash."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A1",
+      "source": "Alert",
+      "fact": "Container backend of pod demo/backend-7b8d9f4db-qgxx8 is in waiting state (reason: CrashLoopBackOff) for at least 1 minute."
+    },
+    {
+      "tool_call": "A1",
+      "source": "Alert",
+      "fact": "Pod demo/backend-7b8d9f4db-qgxx8 (backend) is crash looping."
+    },
+    {
+      "tool_call": "A2",
+      "source": "Pod and container status",
+      "fact": "Container backend is OOMKilled with exit code 137."
+    },
+    {
+      "tool_call": "A4",
+      "source": "Container logs",
+      "fact": "Container logs show a crash."
+    },
+    {
+      "tool_call": "A6",
+      "source": "Restarts and last termination reason",
+      "fact": "Container is in a terminated state with exit code 137."
+    },
+    {
+      "tool_call": "A7",
+      "source": "Resource usage vs. limits",
+      "fact": "Container is in a terminated state with exit code 137."
+    },
+    {
+      "tool_call": "A8",
+      "source": "Service endpoints of the workload",
+      "fact": "Container is in a terminated state with exit code 137."
+    },
+    {
+      "tool_call": "A10",
+      "source": "Log and event history",
+      "fact": "Container is in a terminated state with exit code 137."
+    },
+    {
+      "tool_call": "A9",
+      "source": "Node conditions",
+      "fact": "Container is in a terminated state with exit code 137."
+    }
+  ],
+  "impact": "Critical",
+  "next_steps": [
+    {
+      "action": "Restart the container",
+      "command": "kubectl restart backend-7b8d9f4db-qgxx8",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

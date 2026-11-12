@@ -1,0 +1,5 @@
+mode=pipeline provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/frontend | confidence high
+The frontend service is experiencing high latency due to a misconfigured backend URL following a recent deployment.
+notification delivered to the webhook
+mode=pipeline model=gemini-3.1-flash-lite tool_calls=22 model_steps=1 rejected=0 repairs=0 duration=2.2s tokens in/out=9632/464 stop=diagnosis

@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/frontend | confidence high
+The frontend service is failing to communicate with the backend due to a configuration mismatch in the backend port.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=15 model_steps=18 rejected=1 repairs=0 duration=97.5s tokens in/out=130636/1100 stop=diagnosis

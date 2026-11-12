@@ -1,0 +1,5 @@
+mode=agent provider=apfel model=apple-foundationmodel
+OOMKilled | namespace/deployment/name | confidence high
+Container backend of pod demo/backend-7b8d9f4db-qgxx8 is OOMKilled, causing it to crash loop.
+notification delivered to the webhook
+mode=agent model=apple-foundationmodel tool_calls=4 model_steps=7 rejected=2 repairs=0 duration=38.7s tokens in/out=14025/790 stop=diagnosis

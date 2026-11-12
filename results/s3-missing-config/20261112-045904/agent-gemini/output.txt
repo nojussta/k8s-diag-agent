@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/frontend | confidence high
+The pod 'frontend-6df678c5fd-vqkd8' is in a 'CreateContainerConfigError' state because the required ConfigMap 'frontend-config' is missing in the 'demo' namespace.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=15 model_steps=17 rejected=0 repairs=0 duration=89.6s tokens in/out=77985/909 stop=diagnosis

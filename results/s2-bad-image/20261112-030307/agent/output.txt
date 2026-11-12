@@ -1,0 +1,5 @@
+mode=agent provider=apfel model=apple-foundationmodel
+ImagePullError | container frontend | confidence medium
+Pod demo/frontend-68747558f7-qr4m7 is not ready because the image pull failed. Check the image pull logs for more details.
+notification delivered to the webhook
+mode=agent model=apple-foundationmodel tool_calls=4 model_steps=7 rejected=2 repairs=0 duration=40.5s tokens in/out=14040/700 stop=diagnosis

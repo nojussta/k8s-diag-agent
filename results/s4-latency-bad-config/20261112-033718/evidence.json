@@ -1,0 +1,407 @@
+{
+  "target": {
+    "alertname": "LabHighLatency",
+    "namespace": "demo",
+    "pod": "frontend-69bd4c6cb4-kkdbs",
+    "container": "",
+    "deployment": "",
+    "service": "frontend",
+    "summary": "Service demo/frontend is slow",
+    "startsAt": "2026-11-12T01:39:00.907Z"
+  },
+  "total_calls": 22,
+  "total_duration_s": 0.07,
+  "actions": [
+    {
+      "id": "A1",
+      "name": "Parse alert and resolve target",
+      "source": "Alert payload + K8s API",
+      "ok": true,
+      "calls": 2,
+      "duration_s": 0.01,
+      "output": {
+        "alertname": "LabHighLatency",
+        "namespace": "demo",
+        "pod": "frontend-69bd4c6cb4-kkdbs",
+        "container": "",
+        "deployment": "",
+        "service": "frontend",
+        "summary": "Service demo/frontend is slow",
+        "startsAt": "2026-11-12T01:39:00.907Z"
+      }
+    },
+    {
+      "id": "A2",
+      "name": "Pod and container status",
+      "source": "K8s API: pods",
+      "ok": true,
+      "calls": 1,
+      "duration_s": 0,
+      "output": {
+        "conditions": {
+          "ContainersReady": "True",
+          "Initialized": "True",
+          "PodReadyToStartContainers": "True",
+          "PodScheduled": "True",
+          "Ready": "True"
+        },
+        "containers": [
+          {
+            "image": "ghcr.io/stefanprodan/podinfo:6.15.0",
+            "lastState": null,
+            "name": "frontend",
+            "ready": true,
+            "restartCount": 0,
+            "state": {
+              "startedAt": "2026-11-12T01:37:18Z",
+              "state": "running"
+            }
+          }
+        ],
+        "node": "kursinis-worker2",
+        "phase": "Running",
+        "resources": {
+          "frontend": {
+            "limits": {
+              "memory": "128Mi"
+            },
+            "requests": {
+              "cpu": "10m",
+              "memory": "32Mi"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "A3",
+      "name": "Events for the pod",
+      "source": "K8s API: events",
+      "ok": true,
+      "calls": 1,
+      "duration_s": 0,
+      "output": [
+        "2026-11-12T01:37:18Z Normal Scheduled x1: Successfully assigned demo/frontend-69bd4c6cb4-kkdbs to kursinis-worker2",
+        "2026-11-12T01:37:18Z Normal Pulled x1: Container image \"ghcr.io/stefanprodan/podinfo:6.15.0\" already present on machine and can be accessed by the pod",
+        "2026-11-12T01:37:18Z Normal Created x1: Container created",
+        "2026-11-12T01:37:18Z Normal Started x1: Container started",
+        "2026-11-12T01:37:18Z Warning Unhealthy x1: Readiness probe failed: Get \"http://10.244.1.38:9898/readyz\": dial tcp 10.244.1.38:9898: connect: connection refused"
+      ]
+    },
+    {
+      "id": "A4",
+      "name": "Container logs (current and previous)",
+      "source": "K8s API: pods/log",
+      "ok": true,
+      "calls": 2,
+      "duration_s": 0.01,
+      "output": {
+        "current": [
+          "{\"level\":\"info\",\"ts\":\"2026-11-12T01:37:18.680Z\",\"caller\":\"http/server.go:273\",\"msg\":\"Starting HTTP Server.\",\"addr\":\":9898\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:22.691Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:25.697Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:28.706Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:31.716Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:34.728Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:37.736Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:40.745Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:43.754Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:46.760Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:49.767Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:52.775Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:55.782Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:58.788Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:01.796Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:04.805Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:07.812Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:10.820Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:13.828Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:16.837Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:19.846Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:22.857Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:25.867Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:28.875Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:31.882Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:34.896Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:37.902Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:40.908Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:43.915Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:46.922Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:49.929Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:52.937Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:55.945Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:58.953Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:39:01.960Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:39:04.969Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:39:07.976Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:39:10.984Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:39:13.991Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:39:16.998Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}"
+        ],
+        "previous": "unavailable: the server rejected our request for an unknown reason (get pods frontend-69bd4c6cb4-kkdbs)"
+      }
+    },
+    {
+      "id": "A5",
+      "name": "Owner, rollout history and recent change",
+      "source": "K8s API: replicasets, deployments",
+      "ok": true,
+      "calls": 3,
+      "duration_s": 0.01,
+      "output": {
+        "conditions": [
+          "Available=True (MinimumReplicasAvailable): Deployment has minimum availability.",
+          "Progressing=True (NewReplicaSetAvailable): ReplicaSet \"frontend-69bd4c6cb4\" has successfully progressed."
+        ],
+        "deployment": "frontend",
+        "replicas": {
+          "availableReplicas": 1,
+          "readyReplicas": 1,
+          "replicas": 1,
+          "unavailableReplicas": 0,
+          "updatedReplicas": 1
+        },
+        "revisions": [
+          {
+            "change_cause": "release 2.1: frontend configuration update",
+            "created": "2026-11-11T23:57:28Z",
+            "name": "frontend-69bd4c6cb4",
+            "replicas": 1,
+            "revision": 30
+          },
+          {
+            "change_cause": "release 2.1: frontend configuration update",
+            "created": "2026-11-11T23:56:25Z",
+            "name": "frontend-6554997569",
+            "replicas": 0,
+            "revision": 29
+          },
+          {
+            "change_cause": "release 2.1: frontend configuration update",
+            "created": "2026-11-12T01:13:24Z",
+            "name": "frontend-6df678c5fd",
+            "replicas": 0,
+            "revision": 26
+          }
+        ],
+        "template_diff_latest_vs_previous": [
+          {
+            "container": "frontend",
+            "field": "args",
+            "previous": [
+              "--port=9898",
+              "--port-metrics=9797",
+              "--level=info",
+              "--backend-url=http://backend.demo.svc.cluster.local:9898/echo"
+            ],
+            "current": [
+              "--port=9898",
+              "--port-metrics=9797",
+              "--level=info",
+              "--backend-url=http://backend.demo.svc.cluster.local:9899/echo"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "A6",
+      "name": "Restarts and last termination reason",
+      "source": "Prometheus (kube-state-metrics)",
+      "ok": true,
+      "calls": 2,
+      "duration_s": 0.01,
+      "output": {
+        "last_terminated_reason": [],
+        "restarts_15m": [
+          {
+            "container": "frontend",
+            "endpoint": "http",
+            "instance": "10.244.2.4:8080",
+            "job": "kube-state-metrics",
+            "namespace": "demo",
+            "pod": "frontend-69bd4c6cb4-kkdbs",
+            "service": "kps-kube-state-metrics",
+            "uid": "fcb88244-b178-42e5-9c90-629fe6b90ca9",
+            "value": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "A7",
+      "name": "Resource usage vs. limits",
+      "source": "Prometheus (cAdvisor + kube-state-metrics)",
+      "ok": true,
+      "calls": 3,
+      "duration_s": 0.01,
+      "output": {
+        "cpu_usage_cores_5m": [
+          {
+            "container": "frontend",
+            "cpu": "total",
+            "endpoint": "https-metrics",
+            "id": "/kubelet.slice/kubelet-kubepods.slice/kubelet-kubepods-burstable.slice/kubelet-kubepods-burstable-podfcb88244_b178_42e5_9c90_629fe6b90ca9.slice/cri-containerd-5bc84b41df11c4e10f698f9a3b752b7d1db790bd682a6d580f06646c560e70d5.scope",
+            "image": "ghcr.io/stefanprodan/podinfo:6.15.0",
+            "instance": "172.18.0.2:10250",
+            "job": "kubelet",
+            "metrics_path": "/metrics/cadvisor",
+            "name": "5bc84b41df11c4e10f698f9a3b752b7d1db790bd682a6d580f06646c560e70d5",
+            "namespace": "demo",
+            "node": "kursinis-worker2",
+            "pod": "frontend-69bd4c6cb4-kkdbs",
+            "service": "kps-kubelet",
+            "value": 0.000702555270140198
+          }
+        ],
+        "memory_limit_bytes": [
+          {
+            "__name__": "kube_pod_container_resource_limits",
+            "container": "frontend",
+            "endpoint": "http",
+            "instance": "10.244.2.4:8080",
+            "job": "kube-state-metrics",
+            "namespace": "demo",
+            "node": "kursinis-worker2",
+            "pod": "frontend-69bd4c6cb4-kkdbs",
+            "resource": "memory",
+            "service": "kps-kube-state-metrics",
+            "uid": "fcb88244-b178-42e5-9c90-629fe6b90ca9",
+            "unit": "byte",
+            "value": 134217728
+          }
+        ],
+        "memory_working_set_max_15m_bytes": [
+          {
+            "container": "frontend",
+            "endpoint": "https-metrics",
+            "id": "/kubelet.slice/kubelet-kubepods.slice/kubelet-kubepods-burstable.slice/kubelet-kubepods-burstable-podfcb88244_b178_42e5_9c90_629fe6b90ca9.slice/cri-containerd-5bc84b41df11c4e10f698f9a3b752b7d1db790bd682a6d580f06646c560e70d5.scope",
+            "image": "ghcr.io/stefanprodan/podinfo:6.15.0",
+            "instance": "172.18.0.2:10250",
+            "job": "kubelet",
+            "metrics_path": "/metrics/cadvisor",
+            "name": "5bc84b41df11c4e10f698f9a3b752b7d1db790bd682a6d580f06646c560e70d5",
+            "namespace": "demo",
+            "node": "kursinis-worker2",
+            "pod": "frontend-69bd4c6cb4-kkdbs",
+            "service": "kps-kubelet",
+            "value": 28168192
+          }
+        ]
+      }
+    },
+    {
+      "id": "A8",
+      "name": "Service endpoints of the workload",
+      "source": "K8s API: services, endpointslices",
+      "ok": true,
+      "calls": 2,
+      "duration_s": 0,
+      "output": [
+        {
+          "endpoints": 1,
+          "ready": 1,
+          "service": "frontend"
+        }
+      ]
+    },
+    {
+      "id": "A9",
+      "name": "Node conditions",
+      "source": "K8s API: nodes",
+      "ok": true,
+      "calls": 1,
+      "duration_s": 0,
+      "output": {
+        "conditions": {
+          "DiskPressure": "False",
+          "MemoryPressure": "False",
+          "PIDPressure": "False",
+          "Ready": "True"
+        },
+        "node": "kursinis-worker2"
+      }
+    },
+    {
+      "id": "A10",
+      "name": "Log and event history (Loki)",
+      "source": "Loki",
+      "ok": true,
+      "calls": 2,
+      "duration_s": 0.01,
+      "output": {
+        "events": [
+          "name=frontend-69bd4c6cb4-kkdbs kind=Pod objectAPIversion=v1 objectRV=13013 eventRV=13024 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Unhealthy type=Warning count=1 msg=\"Readiness probe failed: Get \\\"http://10.244.1.38:9898/readyz\\\": dial tcp 10.244.1.38:9898: connect: connection refused\" ",
+          "name=frontend-69bd4c6cb4-kkdbs kind=Pod objectAPIversion=v1 objectRV=13013 eventRV=13023 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Started type=Normal count=1 msg=\"Container started\" ",
+          "name=frontend-69bd4c6cb4-kkdbs kind=Pod objectAPIversion=v1 objectRV=13013 eventRV=13022 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Created type=Normal count=1 msg=\"Container created\" ",
+          "name=frontend-69bd4c6cb4-kkdbs kind=Pod objectAPIversion=v1 objectRV=13009 eventRV=13015 reportingcontroller=default-scheduler sourcecomponent=default-scheduler reason=Scheduled type=Normal count=1 msg=\"Successfully assigned demo/frontend-69bd4c6cb4-kkdbs to kursinis-worker2\" ",
+          "name=frontend-69bd4c6cb4 kind=ReplicaSet objectAPIversion=apps/v1 objectRV=13007 eventRV=13011 reportingcontroller=replicaset-controller sourcecomponent=replicaset-controller reason=SuccessfulCreate type=Normal count=1 msg=\"Created pod: frontend-69bd4c6cb4-kkdbs\" ",
+          "name=frontend-69bd4c6cb4-kkdbs kind=Pod objectAPIversion=v1 objectRV=13013 eventRV=13020 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Pulled type=Normal count=1 msg=\"Container image \\\"ghcr.io/stefanprodan/podinfo:6.15.0\\\" already present on machine and can be accessed by the pod\" "
+        ],
+        "pod_logs": [
+          "{\"level\":\"info\",\"ts\":\"2026-11-12T01:37:18.680Z\",\"caller\":\"http/server.go:273\",\"msg\":\"Starting HTTP Server.\",\"addr\":\":9898\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:22.691Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:25.697Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:28.706Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:31.716Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:34.728Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:37.736Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:40.745Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:43.754Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:46.760Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:49.767Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:52.775Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:55.782Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:37:58.788Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:01.796Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:04.805Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:07.812Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:10.820Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:13.828Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:16.837Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:19.846Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:22.857Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:25.867Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:28.875Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:31.882Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:34.896Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:37.902Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:40.908Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:43.915Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:46.922Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:49.929Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:52.937Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:55.945Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:38:58.953Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:39:01.960Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:39:04.969Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:39:07.976Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:39:10.984Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:39:13.991Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+          "{\"level\":\"error\",\"ts\":\"2026-11-12T01:39:16.998Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n"
+        ]
+      }
+    },
+    {
+      "id": "A11",
+      "name": "Service golden signals (RED)",
+      "source": "Prometheus (application metrics)",
+      "ok": true,
+      "calls": 3,
+      "duration_s": 0.01,
+      "output": {
+        "error_rate_5xx_rps": [],
+        "latency_p95_s": [
+          {
+            "value": 2.2872504464270658
+          }
+        ],
+        "request_rate_rps": [
+          {
+            "value": 0.5345569728451552
+          }
+        ]
+      }
+    }
+  ]
+}

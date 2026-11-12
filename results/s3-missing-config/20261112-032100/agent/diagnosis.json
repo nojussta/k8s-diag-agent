@@ -1,0 +1,30 @@
+{
+  "summary": "Missing configmap \"frontend-config\" caused the pod to be in a non-ready state.",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "frontend",
+    "explanation": "Missing configmap \"frontend-config\" caused the pod to be in a non-ready state."
+  },
+  "confidence": "medium",
+  "evidence": [
+    {
+      "tool_call": "t2",
+      "source": "get_pod_status",
+      "fact": "configmap \"frontend-config\" not found"
+    },
+    {
+      "tool_call": "t3",
+      "source": "get_rollout_history",
+      "fact": "Deployment has minimum availability."
+    }
+  ],
+  "impact": "Pod is not ready because the required configmap is missing.",
+  "next_steps": [
+    {
+      "action": "Check if the configmap \"frontend-config\" exists and is accessible.",
+      "command": "kubectl get configmap frontend-config",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

@@ -1,0 +1,3 @@
+mode=agent provider=gemini model=gemini-3-flash-preview
+mode=agent model=gemini-3-flash-preview tool_calls=9 model_steps=11 rejected=1 repairs=0 duration=37.5s tokens in/out=37457/1537 stop=model_error
+error: gemini: daily quota exhausted: {"error":{"message":"Rate limit exceeded for model gemini-3-flash (limit: 20 requests per day on Free Tier). Please retry in 7h31m11s or upgrade your tier at https://ai.dev/rate-limit.","code":"too_many_requests"}}

@@ -1,0 +1,5 @@
+mode=pipeline provider=apfel model=apple-foundationmodel
+Unknown | Service demo/backend | confidence medium
+Service demo/backend is not receiving any requests, causing a warning.
+notification delivered to the webhook
+mode=pipeline model=apple-foundationmodel tool_calls=22 model_steps=1 rejected=0 repairs=0 duration=11.1s tokens in/out=1696/558 stop=diagnosis

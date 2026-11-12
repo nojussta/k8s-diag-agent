@@ -1,0 +1,12 @@
+{
+  "tool_calls": 19,
+  "rejected_calls": 0,
+  "repairs": 0,
+  "duration_s": 0.050397292,
+  "input_tokens": 0,
+  "output_tokens": 0,
+  "stop_reason": "diagnosis",
+  "model": "none",
+  "model_steps": 0,
+  "mode": "rules"
+}

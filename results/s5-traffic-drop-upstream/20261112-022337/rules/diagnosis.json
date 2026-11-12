@@ -1,0 +1,32 @@
+{
+  "summary": "Unknown in demo/deployment/backend: No rule matched the pod status, events or node conditions.",
+  "root_cause": {
+    "category": "Unknown",
+    "component": "demo/deployment/backend",
+    "explanation": "No rule matched the pod status, events or node conditions."
+  },
+  "confidence": "low",
+  "evidence": [
+    {
+      "tool_call": "A2",
+      "source": "pod status",
+      "fact": "phase=Running; backend restarts=0"
+    },
+    {
+      "tool_call": "A3",
+      "source": "events",
+      "fact": "2026-11-11T23:56:29Z Warning Unhealthy x1: Readiness probe failed: Get \"http://10.244.1.10:9898/readyz\": dial tcp 10.244.1.10:9898: connect: connection refused"
+    }
+  ],
+  "impact": "The inspected pod is running and ready.",
+  "next_steps": [
+    {
+      "action": "Investigate manually: no rule covers this case",
+      "command": null,
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": [
+    "the fault is not one of the known failure classes R1-R7"
+  ]
+}

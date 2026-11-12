@@ -1,0 +1,109 @@
+{
+  "scenario": "s4-latency-bad-config",
+  "title": "A frontend release points to a wrong backend port (high latency, all pods healthy)",
+  "started": "2026-11-12T02:06:32+0200",
+  "steps": {
+    "agent": "ok",
+    "baseline": "healthy",
+    "detect": "ok",
+    "evidence": "ok",
+    "pipeline": "ok",
+    "reset": "ok"
+  },
+  "t_inject": 1794441992.690409,
+  "t_alert": 1794442090.9201474,
+  "detection_latency_s": 98.2,
+  "alert_labels": {
+    "alertname": "LabHighLatency",
+    "lab": "kursinis",
+    "namespace": "demo",
+    "prometheus": "monitoring/kps-prometheus",
+    "service": "frontend",
+    "severity": "warning"
+  },
+  "baseline_collection": {
+    "calls": 22,
+    "duration_s": 0.07
+  },
+  "methods": {
+    "agent": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider apfel",
+      "exit_code": 0,
+      "duration_s": 24.4,
+      "diagnosed": true,
+      "judgement": {
+        "category": false,
+        "component": true,
+        "change": false,
+        "correct": false,
+        "text": "wrong: category, change"
+      },
+      "metrics": {
+        "tool_calls": 7,
+        "rejected_calls": 3,
+        "repairs": 0,
+        "duration_s": 23.343613709,
+        "input_tokens": 20080,
+        "output_tokens": 1057,
+        "stop_reason": "diagnosis",
+        "model": "apple-foundationmodel",
+        "model_steps": 11,
+        "mode": "agent"
+      },
+      "notified": true
+    },
+    "pipeline": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider apfel --mode pipeline --evidence {evidence}",
+      "exit_code": 0,
+      "duration_s": 27.7,
+      "diagnosed": true,
+      "judgement": {
+        "category": false,
+        "component": true,
+        "change": false,
+        "correct": false,
+        "text": "wrong: category, change"
+      },
+      "metrics": {
+        "tool_calls": 22,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 27.554331083,
+        "input_tokens": 1380,
+        "output_tokens": 303,
+        "stop_reason": "diagnosis",
+        "model": "apple-foundationmodel",
+        "model_steps": 1,
+        "mode": "pipeline"
+      },
+      "notified": true
+    },
+    "rules": {
+      "exit_code": 0,
+      "duration_s": 0.1,
+      "diagnosed": true,
+      "judgement": {
+        "category": false,
+        "component": true,
+        "change": true,
+        "correct": false,
+        "text": "wrong: category"
+      },
+      "rule": "none",
+      "metrics": {
+        "tool_calls": 22,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 0.07175687500000001,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "stop_reason": "diagnosis",
+        "model": "none",
+        "model_steps": 0,
+        "mode": "rules"
+      },
+      "notified": false
+    }
+  },
+  "finished": "2026-11-12T02:10:39+0200"
+}

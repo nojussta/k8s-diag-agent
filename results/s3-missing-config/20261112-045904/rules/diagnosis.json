@@ -1,0 +1,35 @@
+{
+  "summary": "ConfigurationError in demo/deployment/frontend: container frontend cannot be created (CreateContainerConfigError: configmap \"frontend-config\" not found). It started with the newest revision: revision 52 (change-cause: release 2.1: frontend configuration update) changed frontend env: [{\"name\":\"PODINFO_UI_MESSAGE\",\"value\":\"frontend\"}] -\u003e [{\"name\":\"PODINFO_UI_MESSAGE\",\"value\":\"frontend\"},{\"name\":\"PODINFO_UI_COLOR\",\"valueFrom\":{\"configMapKeyRef\":{\"key\":\"ui.color\",\"name\":\"frontend-config\"}}}].",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "demo/deployment/frontend",
+    "explanation": "container frontend cannot be created (CreateContainerConfigError: configmap \"frontend-config\" not found). It started with the newest revision: revision 52 (change-cause: release 2.1: frontend configuration update) changed frontend env: [{\"name\":\"PODINFO_UI_MESSAGE\",\"value\":\"frontend\"}] -\u003e [{\"name\":\"PODINFO_UI_MESSAGE\",\"value\":\"frontend\"},{\"name\":\"PODINFO_UI_COLOR\",\"valueFrom\":{\"configMapKeyRef\":{\"key\":\"ui.color\",\"name\":\"frontend-config\"}}}]."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A2",
+      "source": "pod status",
+      "fact": "phase=Pending; frontend restarts=0 state=CreateContainerConfigError"
+    },
+    {
+      "tool_call": "A3",
+      "source": "events",
+      "fact": "2026-11-12T03:01:51Z Warning Failed x15: Error: configmap \"frontend-config\" not found"
+    },
+    {
+      "tool_call": "A5",
+      "source": "rollout history",
+      "fact": "revision 52 (change-cause: release 2.1: frontend configuration update) changed frontend env: [{\"name\":\"PODINFO_UI_MESSAGE\",\"value\":\"frontend\"}] -\u003e [{\"name\":\"PODINFO_UI_MESSAGE\",\"value\":\"frontend\"},{\"name\":\"PODINFO_UI_COLOR\",\"valueFrom\":{\"configMapKeyRef\":{\"key\":\"ui.color\",\"name\":\"frontend-config\"}}}]."
+    }
+  ],
+  "impact": "The inspected pod is not ready (phase Pending).",
+  "next_steps": [
+    {
+      "action": "Roll back to the previous revision",
+      "command": "kubectl -n demo rollout undo deployment/frontend",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

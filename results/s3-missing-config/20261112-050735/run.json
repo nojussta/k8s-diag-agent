@@ -1,0 +1,110 @@
+{
+  "scenario": "s3-missing-config",
+  "title": "Missing configuration object (CreateContainerConfigError)",
+  "started": "2026-11-12T05:07:35+0200",
+  "steps": {
+    "agent-gemini": "ok",
+    "baseline": "healthy",
+    "detect": "ok",
+    "evidence": "ok",
+    "pipeline-gemini": "ok",
+    "reset": "ok"
+  },
+  "t_inject": 1794452855.030443,
+  "t_alert": 1794453001.0170865,
+  "detection_latency_s": 146,
+  "alert_labels": {
+    "alertname": "LabPodNotReady",
+    "lab": "kursinis",
+    "namespace": "demo",
+    "pod": "frontend-6df678c5fd-f6cpj",
+    "prometheus": "monitoring/kps-prometheus",
+    "severity": "warning"
+  },
+  "baseline_collection": {
+    "calls": 19,
+    "duration_s": 0.05
+  },
+  "methods": {
+    "agent-gemini": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider gemini --model gemini-3.1-flash-lite",
+      "exit_code": 0,
+      "duration_s": 50.3,
+      "diagnosed": true,
+      "judgement": {
+        "category": true,
+        "component": true,
+        "change": true,
+        "correct": true,
+        "text": "category, component and change match"
+      },
+      "metrics": {
+        "tool_calls": 8,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 50.173116,
+        "input_tokens": 33528,
+        "output_tokens": 781,
+        "stop_reason": "diagnosis",
+        "model": "gemini-3.1-flash-lite",
+        "model_steps": 9,
+        "mode": "agent",
+        "rate_limit_wait_s": 33.507646794
+      },
+      "notified": true
+    },
+    "pipeline-gemini": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider gemini --model gemini-3.1-flash-lite --mode pipeline --evidence {evidence}",
+      "exit_code": 0,
+      "duration_s": 2.7,
+      "diagnosed": true,
+      "judgement": {
+        "category": true,
+        "component": true,
+        "change": true,
+        "correct": true,
+        "text": "category, component and change match"
+      },
+      "metrics": {
+        "tool_calls": 19,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 2.652094208,
+        "input_tokens": 5458,
+        "output_tokens": 603,
+        "stop_reason": "diagnosis",
+        "model": "gemini-3.1-flash-lite",
+        "model_steps": 1,
+        "mode": "pipeline"
+      },
+      "notified": true
+    },
+    "rules": {
+      "exit_code": 0,
+      "duration_s": 0.1,
+      "diagnosed": true,
+      "judgement": {
+        "category": true,
+        "component": true,
+        "change": true,
+        "correct": true,
+        "text": "category, component and change match"
+      },
+      "rule": "R3",
+      "metrics": {
+        "tool_calls": 19,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 0.050283,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "stop_reason": "diagnosis",
+        "model": "none",
+        "model_steps": 0,
+        "mode": "rules"
+      },
+      "notified": false
+    }
+  },
+  "finished": "2026-11-12T05:11:26+0200"
+}

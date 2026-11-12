@@ -1,0 +1,55 @@
+{
+  "summary": "Pod is overloaded due to node kursinis-worker2 being overloaded with CPU and memory usage.",
+  "root_cause": {
+    "category": "NodeProblem",
+    "component": "node kursinis-worker2",
+    "explanation": "Node is overloaded with CPU and memory usage"
+  },
+  "confidence": "medium",
+  "evidence": [
+    {
+      "tool_call": "t1",
+      "source": "query_logs",
+      "fact": "Service demo/frontend is slow"
+    },
+    {
+      "tool_call": "t3",
+      "source": "get_pod_status",
+      "fact": "Pod frontend-69bd4c6cb4-nn7wk is Running"
+    },
+    {
+      "tool_call": "t5",
+      "source": "get_resource_usage",
+      "fact": "Pod frontend-69bd4c6cb4-nn7wk has 100% CPU usage"
+    },
+    {
+      "tool_call": "t5",
+      "source": "get_resource_usage",
+      "fact": "Pod frontend-69bd4c6cb4-nn7wk has 100% memory usage"
+    },
+    {
+      "tool_call": "t6",
+      "source": "get_node_status",
+      "fact": "Pod frontend-69bd4c6cb4-nn7wk has 100% CPU usage on node kursinis-worker2"
+    },
+    {
+      "tool_call": "t6",
+      "source": "get_node_status",
+      "fact": "Pod frontend-69bd4c6cb4-nn7wk has 100% memory usage on node kursinis-worker2"
+    },
+    {
+      "tool_call": "t6",
+      "source": "get_node_status",
+      "fact": "Pod frontend-69bd4c6cb4-nn7wk has 100% CPU usage on node kursinis-worker2"
+    }
+  ],
+  "impact": "Pod is overloaded",
+  "next_steps": [
+    {
+      "action": "Check CPU and memory limits",
+      "command": "kubectl get pods --namespace demo --selector app=demo.service.demo.frontend --show-labels --show-resource-usage",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

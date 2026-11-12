@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-12T00:19:45Z",
+    "text": "Incident triage: LabTrafficDrop\nProbable cause: ConfigurationError in demo/backend (confidence medium)\nPod status validation failed for backend-5b97dd7dcb-f44wr\n\nEvidence:\n- [t2 get_pod_status] Pod status validation failed for backend-5b97dd7dcb-f44wr\n- [t1 list_pods] Pod is running on node kursinis-worker2\n\nSuggested next steps (not executed; a person decides):\n- Check Deployment history for backend-5b97dd7dcb-f44wr: kubectl describe deployment demo/backend\n\nMethod agent, model apple-foundationmodel, 2 read-only calls, 55.4 s.\n"
+  }
+]

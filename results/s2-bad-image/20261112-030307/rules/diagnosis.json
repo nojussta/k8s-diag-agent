@@ -1,0 +1,35 @@
+{
+  "summary": "ImagePullError in demo/deployment/frontend: image ghcr.io/stefanprodan/podinfo:6.15.99 of container frontend cannot be pulled (ImagePullBackOff). It started with the newest revision: revision 18 changed frontend image: \"ghcr.io/stefanprodan/podinfo:6.15.0\" -\u003e \"ghcr.io/stefanprodan/podinfo:6.15.99\".",
+  "root_cause": {
+    "category": "ImagePullError",
+    "component": "demo/deployment/frontend",
+    "explanation": "image ghcr.io/stefanprodan/podinfo:6.15.99 of container frontend cannot be pulled (ImagePullBackOff). It started with the newest revision: revision 18 changed frontend image: \"ghcr.io/stefanprodan/podinfo:6.15.0\" -\u003e \"ghcr.io/stefanprodan/podinfo:6.15.99\"."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A2",
+      "source": "pod status",
+      "fact": "phase=Pending; frontend restarts=0 state=ImagePullBackOff"
+    },
+    {
+      "tool_call": "A3",
+      "source": "events",
+      "fact": "2026-11-12T01:05:38Z Warning Failed x9: Error: ImagePullBackOff"
+    },
+    {
+      "tool_call": "A5",
+      "source": "rollout history",
+      "fact": "revision 18 changed frontend image: \"ghcr.io/stefanprodan/podinfo:6.15.0\" -\u003e \"ghcr.io/stefanprodan/podinfo:6.15.99\"."
+    }
+  ],
+  "impact": "The inspected pod is not ready (phase Pending).",
+  "next_steps": [
+    {
+      "action": "Roll back to the previous revision",
+      "command": "kubectl -n demo rollout undo deployment/frontend",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

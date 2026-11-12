@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-12T01:46:11Z",
+    "text": "Incident triage: LabPodCrashLooping\nProbable cause: ApplicationCrash in backend (confidence medium)\nPod is in a crash loop, likely due to a crash in the backend container.\n\nEvidence:\n- [A1 A1] Container backend of pod demo/backend-7b8d9f4db-tmhb6 is in waiting state (reason: CrashLoopBackOff) for at least 1 minute.\n- [A1 A1] Pod demo/backend-7b8d9f4db-tmhb6 (backend) is crash looping.\n- [A3 A3] Events for the pod (K8s API)\n- [A11 A11] Service golden signals (RED) (Prometheus (application metrics)\n\nSuggested next steps (not executed; a person decides):\n- Check logs for crash details.: kubectl logs demo/backend-7b8d9f4db-tmhb6\n\nMethod pipeline, model apple-foundationmodel, 20 read-only calls, 26.8 s.\n"
+  }
+]

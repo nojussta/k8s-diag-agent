@@ -1,0 +1,75 @@
+{
+  "summary": "Container backend of pod demo/backend-7b8d9f4db-4grm2 is in a terminated state with reason OOMKilled. Restart the container.",
+  "root_cause": {
+    "category": "OOMKilled",
+    "component": "backend",
+    "explanation": "Container backend is in a terminated state with reason OOMKilled."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A1",
+      "source": "Alert",
+      "fact": "Container backend of pod demo/backend-7b8d9f4db-4grm2 is in waiting state (reason: CrashLoopBackOff) for at least 1 minute."
+    },
+    {
+      "tool_call": "A1",
+      "source": "Alert",
+      "fact": "Pod demo/backend-7b8d9f4db-4grm2 (backend) is crash looping."
+    },
+    {
+      "tool_call": "A2",
+      "source": "Pod and container status",
+      "fact": "Container backend is terminated with reason OOMKilled."
+    },
+    {
+      "tool_call": "A2",
+      "source": "Pod and container status",
+      "fact": "Container backend is restarted 4 times."
+    },
+    {
+      "tool_call": "A2",
+      "source": "Pod and container status",
+      "fact": "Container backend is in a terminated state."
+    },
+    {
+      "tool_call": "A6",
+      "source": "Restarts and last termination reason",
+      "fact": "Container backend is in a terminated state with reason OOMKilled."
+    },
+    {
+      "tool_call": "A7",
+      "source": "Resource usage vs. limits",
+      "fact": "Container backend is in a terminated state with reason OOMKilled."
+    },
+    {
+      "tool_call": "A11",
+      "source": "Service golden signals (RED)",
+      "fact": "Container backend is in a terminated state with reason OOMKilled."
+    },
+    {
+      "tool_call": "A8",
+      "source": "Service endpoints of the workload",
+      "fact": "Container backend is in a terminated state with reason OOMKilled."
+    },
+    {
+      "tool_call": "A10",
+      "source": "Log and event history (Loki)",
+      "fact": "Container backend is in a terminated state with reason OOMKilled."
+    },
+    {
+      "tool_call": "A9",
+      "source": "Node conditions",
+      "fact": "Container backend is in a terminated state with reason OOMKilled."
+    }
+  ],
+  "impact": "Critical",
+  "next_steps": [
+    {
+      "action": "Restart the container",
+      "command": "kubectl restart backend",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

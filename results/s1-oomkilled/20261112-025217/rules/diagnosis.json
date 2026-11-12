@@ -1,0 +1,35 @@
+{
+  "summary": "OOMKilled in demo/deployment/backend (container backend): container backend was killed for exceeding its memory limit (OOMKilled, exit code 137). It started with the newest revision: revision 6 (change-cause: release 2.0: warm in-memory cache on startup) changed backend args: [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\"] -\u003e [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\",\"--stress-memory=256\"].",
+  "root_cause": {
+    "category": "OOMKilled",
+    "component": "demo/deployment/backend (container backend)",
+    "explanation": "container backend was killed for exceeding its memory limit (OOMKilled, exit code 137). It started with the newest revision: revision 6 (change-cause: release 2.0: warm in-memory cache on startup) changed backend args: [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\"] -\u003e [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\",\"--stress-memory=256\"]."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A2",
+      "source": "pod status",
+      "fact": "phase=Running; backend restarts=4 state=CrashLoopBackOff lastState=OOMKilled, exit code 137"
+    },
+    {
+      "tool_call": "A3",
+      "source": "events",
+      "fact": "2026-11-12T00:53:57Z Warning BackOff x8: Back-off restarting failed container backend in pod backend-7b8d9f4db-tmhb6_demo(6e22c148-a66d-4865-89e0-218260757b8f)"
+    },
+    {
+      "tool_call": "A5",
+      "source": "rollout history",
+      "fact": "revision 6 (change-cause: release 2.0: warm in-memory cache on startup) changed backend args: [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\"] -\u003e [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\",\"--stress-memory=256\"]."
+    }
+  ],
+  "impact": "The inspected pod is not ready (phase Running).",
+  "next_steps": [
+    {
+      "action": "Roll back to the previous revision",
+      "command": "kubectl -n demo rollout undo deployment/backend",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

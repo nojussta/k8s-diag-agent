@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+OOMKilled | demo/deployment/backend (container backend) | confidence high
+The backend pod is crash looping due to being OOMKilled, likely caused by an increase in memory usage initiated by a recent configuration change.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=10 model_steps=13 rejected=2 repairs=0 duration=93.1s tokens in/out=51873/872 stop=diagnosis

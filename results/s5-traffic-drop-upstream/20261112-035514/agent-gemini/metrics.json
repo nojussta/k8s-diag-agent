@@ -1,0 +1,13 @@
+{
+  "tool_calls": 10,
+  "rejected_calls": 2,
+  "repairs": 0,
+  "duration_s": 70.684810125,
+  "input_tokens": 54662,
+  "output_tokens": 842,
+  "stop_reason": "diagnosis",
+  "model": "gemini-3.1-flash-lite",
+  "model_steps": 13,
+  "mode": "agent",
+  "rate_limit_wait_s": 50.271111918
+}

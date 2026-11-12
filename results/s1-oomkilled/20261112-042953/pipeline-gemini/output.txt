@@ -1,0 +1,5 @@
+mode=pipeline provider=gemini model=gemini-3.1-flash-lite
+OOMKilled | demo/deployment/backend (container backend) | confidence high
+The backend pod is crashing due to OOMKilled events. The issue was triggered by a recent configuration change that added a memory-intensive argument '--stress-memory=256', which exceeds the pod's memory limit of 128Mi.
+notification delivered to the webhook
+mode=pipeline model=gemini-3.1-flash-lite tool_calls=20 model_steps=1 rejected=0 repairs=0 duration=2.6s tokens in/out=6650/497 stop=diagnosis

@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-12T01:07:23Z",
+    "text": "Incident triage: LabPodNotReady\nProbable cause: ImagePullError in container frontend (confidence medium)\nContainer frontend is not ready because it is waiting for the image ghcr.io/stefanprodan/podinfo:6.15.99 to be pulled. The image pull failed because it was not found.\n\nEvidence:\n- [t1 alert] Pod demo/frontend-68747558f7-qr4m7 is not ready\n- [t2 alert] Container frontend is not ready\n- [t4 alert] Container frontend is not ready\n\nSuggested next steps (not executed; a person decides):\n- Check image pull\n\nMethod agent, model apple-foundationmodel, 4 read-only calls, 40.5 s.\n"
+  }
+]

@@ -1,0 +1,5 @@
+mode=agent provider=apfel model=apple-foundationmodel
+ConfigurationError | frontend | confidence medium
+Missing configmap caused the pod to be in a non-ready state.
+notification delivered to the webhook
+mode=agent model=apple-foundationmodel tool_calls=6 model_steps=9 rejected=2 repairs=0 duration=20.6s tokens in/out=18702/828 stop=diagnosis

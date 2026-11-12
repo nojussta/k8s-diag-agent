@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ImagePullError | demo/deployment/frontend | confidence high
+The pod 'frontend-68747558f7-8bzbd' is failing to start due to an 'ImagePullBackOff' error, specifically because the requested container image 'ghcr.io/stefanprodan/podinfo:6.15.99' does not exist in the repository.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=14 model_steps=19 rejected=4 repairs=0 duration=102.3s tokens in/out=88398/1205 stop=diagnosis

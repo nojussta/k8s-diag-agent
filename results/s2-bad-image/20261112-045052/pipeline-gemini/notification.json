@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-12T02:53:19Z",
+    "text": "Incident triage: LabPodNotReady\nProbable cause: ImagePullError in demo/deployment/frontend (confidence high)\nThe deployment was updated to use image version '6.15.99', which does not exist in the registry.\n\nEvidence:\n- [A2 K8s API: pods] The pod phase is Pending and the container is in 'ImagePullBackOff' state with message 'ghcr.io/stefanprodan/podinfo:6.15.99: not found'.\n- [A3 K8s API: events] Multiple events confirm a failure to pull the image: 'Failed to pull image ...: not found'.\n- [A5 K8s API: replicasets, deployments] The template diff shows the image was recently updated from '6.15.0' to '6.15.99'.\n\nSuggested next steps (not executed; a person decides):\n- Revert the deployment image to the previous known-good version (6.15.0).: kubectl set image deployment/frontend frontend=ghcr.io/stefanprodan/podinfo:6.15.0 -n demo\n\nMethod pipeline, model gemini-3.1-flash-lite, 19 read-only calls, 2.7 s.\n"
+  }
+]

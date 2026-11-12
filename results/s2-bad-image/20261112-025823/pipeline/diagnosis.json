@@ -1,0 +1,35 @@
+{
+  "summary": "Pod demo/frontend-68747558f7-4vmkr is not ready due to an ImagePullError.",
+  "root_cause": {
+    "category": "ImagePullError",
+    "component": "podinfo",
+    "explanation": "Failed to pull image podinfo:6.15.99"
+  },
+  "confidence": "medium",
+  "evidence": [
+    {
+      "tool_call": "A1",
+      "source": "alert",
+      "fact": "Pod demo/frontend-68747558f7-4vmkr is not ready"
+    },
+    {
+      "tool_call": "A2",
+      "source": "A2",
+      "fact": "ImagePullError: rpc error: code = NotFound desc = failed to pull and unpack image \"ghcr.io/stefanprodan/podinfo:6.15.99\": failed to resolve refere...[cut]"
+    },
+    {
+      "tool_call": "A4",
+      "source": "A4",
+      "fact": "ERROR: the server rejected our request for an unknown reason (get pods frontend-68747558f7-4vmkr)"
+    }
+  ],
+  "impact": "Pod is not ready",
+  "next_steps": [
+    {
+      "action": "Check image pull logs",
+      "command": "kubectl logs frontend-68747558f7-4vmkr",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

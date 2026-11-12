@@ -1,0 +1,5 @@
+mode=pipeline provider=apfel model=apple-foundationmodel
+OOMKilled | backend | confidence high
+Container backend of pod demo/backend-7b8d9f4db-4grm2 is in a terminated state with reason OOMKilled. Restart the container.
+notification delivered to the webhook
+mode=pipeline model=apple-foundationmodel tool_calls=20 model_steps=1 rejected=0 repairs=0 duration=11.3s tokens in/out=1889/583 stop=diagnosis

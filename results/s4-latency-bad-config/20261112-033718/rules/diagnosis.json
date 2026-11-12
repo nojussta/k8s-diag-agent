@@ -1,0 +1,37 @@
+{
+  "summary": "Unknown in demo/deployment/frontend: No rule matched the pod status, events or node conditions. The newest revision (not linked to a rule): revision 30 (change-cause: release 2.1: frontend configuration update) changed frontend args: [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\",\"--backend-url=http://backend.demo.svc.cluster.local:9898/echo\"] -\u003e [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\",\"--backend-url=http://backend.demo.svc.cluster.local:9899/echo\"].",
+  "root_cause": {
+    "category": "Unknown",
+    "component": "demo/deployment/frontend",
+    "explanation": "No rule matched the pod status, events or node conditions. The newest revision (not linked to a rule): revision 30 (change-cause: release 2.1: frontend configuration update) changed frontend args: [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\",\"--backend-url=http://backend.demo.svc.cluster.local:9898/echo\"] -\u003e [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\",\"--backend-url=http://backend.demo.svc.cluster.local:9899/echo\"]."
+  },
+  "confidence": "low",
+  "evidence": [
+    {
+      "tool_call": "A2",
+      "source": "pod status",
+      "fact": "phase=Running; frontend restarts=0"
+    },
+    {
+      "tool_call": "A3",
+      "source": "events",
+      "fact": "2026-11-12T01:37:18Z Warning Unhealthy x1: Readiness probe failed: Get \"http://10.244.1.38:9898/readyz\": dial tcp 10.244.1.38:9898: connect: connection refused"
+    },
+    {
+      "tool_call": "A5",
+      "source": "rollout history",
+      "fact": "revision 30 (change-cause: release 2.1: frontend configuration update) changed frontend args: [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\",\"--backend-url=http://backend.demo.svc.cluster.local:9898/echo\"] -\u003e [\"--port=9898\",\"--port-metrics=9797\",\"--level=info\",\"--backend-url=http://backend.demo.svc.cluster.local:9899/echo\"]."
+    }
+  ],
+  "impact": "The inspected pod is running and ready.",
+  "next_steps": [
+    {
+      "action": "Investigate manually: no rule covers this case",
+      "command": null,
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": [
+    "the fault is not one of the known failure classes R1-R7"
+  ]
+}

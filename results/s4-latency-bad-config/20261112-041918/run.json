@@ -1,0 +1,110 @@
+{
+  "scenario": "s4-latency-bad-config",
+  "title": "A frontend release points to a wrong backend port (high latency, all pods healthy)",
+  "started": "2026-11-12T04:19:18+0200",
+  "steps": {
+    "agent-gemini": "ok",
+    "baseline": "healthy",
+    "detect": "ok",
+    "evidence": "ok",
+    "pipeline-gemini": "ok",
+    "reset": "ok"
+  },
+  "t_inject": 1794449958.547852,
+  "t_alert": 1794450056.0091155,
+  "detection_latency_s": 97.5,
+  "alert_labels": {
+    "alertname": "LabHighLatency",
+    "lab": "kursinis",
+    "namespace": "demo",
+    "prometheus": "monitoring/kps-prometheus",
+    "service": "frontend",
+    "severity": "warning"
+  },
+  "baseline_collection": {
+    "calls": 22,
+    "duration_s": 0.05
+  },
+  "methods": {
+    "agent-gemini": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider gemini --model gemini-3.1-flash-lite",
+      "exit_code": 0,
+      "duration_s": 97.6,
+      "diagnosed": true,
+      "judgement": {
+        "category": true,
+        "component": true,
+        "change": true,
+        "correct": true,
+        "text": "category, component and change match"
+      },
+      "metrics": {
+        "tool_calls": 15,
+        "rejected_calls": 1,
+        "repairs": 0,
+        "duration_s": 97.484415541,
+        "input_tokens": 130636,
+        "output_tokens": 1100,
+        "stop_reason": "diagnosis",
+        "model": "gemini-3.1-flash-lite",
+        "model_steps": 18,
+        "mode": "agent",
+        "rate_limit_wait_s": 71.191973956
+      },
+      "notified": true
+    },
+    "pipeline-gemini": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider gemini --model gemini-3.1-flash-lite --mode pipeline --evidence {evidence}",
+      "exit_code": 0,
+      "duration_s": 2.2,
+      "diagnosed": true,
+      "judgement": {
+        "category": true,
+        "component": true,
+        "change": true,
+        "correct": true,
+        "text": "category, component and change match"
+      },
+      "metrics": {
+        "tool_calls": 22,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 2.240981458,
+        "input_tokens": 9632,
+        "output_tokens": 464,
+        "stop_reason": "diagnosis",
+        "model": "gemini-3.1-flash-lite",
+        "model_steps": 1,
+        "mode": "pipeline"
+      },
+      "notified": true
+    },
+    "rules": {
+      "exit_code": 0,
+      "duration_s": 0.1,
+      "diagnosed": true,
+      "judgement": {
+        "category": false,
+        "component": true,
+        "change": true,
+        "correct": false,
+        "text": "wrong: category"
+      },
+      "rule": "none",
+      "metrics": {
+        "tool_calls": 22,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 0.051088291,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "stop_reason": "diagnosis",
+        "model": "none",
+        "model_steps": 0,
+        "mode": "rules"
+      },
+      "notified": false
+    }
+  },
+  "finished": "2026-11-12T04:24:39+0200"
+}

@@ -1,0 +1,40 @@
+{
+  "summary": "The pod 'frontend-68747558f7-fmjrs' is stuck in ImagePullBackOff because it is attempting to pull a non-existent container image 'ghcr.io/stefanprodan/podinfo:6.15.99'.",
+  "root_cause": {
+    "category": "ImagePullError",
+    "component": "demo/deployment/frontend",
+    "explanation": "A recent configuration change updated the image tag from '6.15.0' to '6.15.99', which does not exist on the registry."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A2",
+      "source": "pods",
+      "fact": "The pod is in ImagePullBackOff state with the error: 'failed to resolve reference \"ghcr.io/stefanprodan/podinfo:6.15.99\": ghcr.io/stefanprodan/podinfo:6.15.99: not found'."
+    },
+    {
+      "tool_call": "A5",
+      "source": "deployments",
+      "fact": "The template diff shows the image was updated from 'ghcr.io/stefanprodan/podinfo:6.15.0' to 'ghcr.io/stefanprodan/podinfo:6.15.99'."
+    },
+    {
+      "tool_call": "A10",
+      "source": "Loki",
+      "fact": "Event logs confirm repeated failure to pull the image 'ghcr.io/stefanprodan/podinfo:6.15.99' due to 'not found'."
+    }
+  ],
+  "impact": "One replica of the frontend deployment is unavailable, though the service maintains partial availability via other healthy pods.",
+  "next_steps": [
+    {
+      "action": "Roll back the deployment to the previous known working image tag.",
+      "command": "kubectl rollout undo deployment/frontend -n demo",
+      "requires_human_approval": true
+    },
+    {
+      "action": "Verify if image '6.15.99' was intended to be pushed or if this was a configuration typo.",
+      "command": null,
+      "requires_human_approval": false
+    }
+  ],
+  "unknowns": []
+}

@@ -1,0 +1,5 @@
+mode=pipeline provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/backend | confidence medium
+The backend service is experiencing a drop in request traffic, but the pods are running correctly and handling requests with low latency, suggesting the issue is external to the pods or related to the recent configuration change.
+notification delivered to the webhook
+mode=pipeline model=gemini-3.1-flash-lite tool_calls=22 model_steps=1 rejected=0 repairs=0 duration=2.8s tokens in/out=3503/555 stop=diagnosis

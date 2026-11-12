@@ -1,0 +1,5 @@
+mode=pipeline provider=apfel model=apple-foundationmodel
+Unknown | Pod demo/frontend-6df678c5fd-hgvmg | confidence medium
+The pod demo/frontend-6df678c5fd-hgvmg is not ready for 2 minutes. Further investigation is needed to determine the root cause.
+notification delivered to the webhook
+mode=pipeline model=apple-foundationmodel tool_calls=19 model_steps=1 rejected=0 repairs=0 duration=57.4s tokens in/out=1198/725 stop=diagnosis

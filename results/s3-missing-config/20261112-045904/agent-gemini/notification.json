@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-12T03:03:44Z",
+    "text": "Incident triage: LabPodNotReady\nProbable cause: ConfigurationError in demo/deployment/frontend (confidence high)\nA recent deployment update introduced a dependency on 'frontend-config' which does not exist in the namespace.\n\nEvidence:\n- [t1 get_pod_status] Pod status is 'Pending' with reason 'CreateContainerConfigError' and message 'configmap \"frontend-config\" not found'.\n- [t2 get_events] Events confirm 'Warning' event: 'Error: configmap \"frontend-config\" not found'.\n- [t3 get_rollout_history] Rollout revision 52 added an environment variable using 'configMapKeyRef' for 'frontend-config'.\n- [t8 query_metrics] Prometheus metric 'kube_configmap_info' returns no data for 'frontend-config'.\n\nSuggested next steps (not executed; a person decides):\n- Create the missing ConfigMap 'frontend-config' in the 'demo' namespace with the required keys.: kubectl create configmap frontend-config --from-literal=ui.color=blue -n demo\n- Alternatively, roll back the deployment to the previous stable revision.: kubectl rollout undo deployment/frontend -n demo\n\nMethod agent, model gemini-3.1-flash-lite, 15 read-only calls, 89.6 s.\n"
+  }
+]

@@ -1,0 +1,40 @@
+{
+  "summary": "Pod is in a crash loop, likely due to a crash in the backend container.",
+  "root_cause": {
+    "category": "ApplicationCrash",
+    "component": "backend",
+    "explanation": "Pod is in a crash loop, likely due to a crash in the backend container."
+  },
+  "confidence": "medium",
+  "evidence": [
+    {
+      "tool_call": "A1",
+      "source": "A1",
+      "fact": "Container backend of pod demo/backend-7b8d9f4db-tmhb6 is in waiting state (reason: CrashLoopBackOff) for at least 1 minute."
+    },
+    {
+      "tool_call": "A1",
+      "source": "A1",
+      "fact": "Pod demo/backend-7b8d9f4db-tmhb6 (backend) is crash looping."
+    },
+    {
+      "tool_call": "A3",
+      "source": "A3",
+      "fact": "Events for the pod (K8s API)"
+    },
+    {
+      "tool_call": "A11",
+      "source": "A11",
+      "fact": "Service golden signals (RED) (Prometheus (application metrics)"
+    }
+  ],
+  "impact": "Pod is in a crash loop.",
+  "next_steps": [
+    {
+      "action": "Check logs for crash details.",
+      "command": "kubectl logs demo/backend-7b8d9f4db-tmhb6",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

@@ -1,0 +1,5 @@
+mode=agent provider=apfel model=apple-foundationmodel
+Unknown | service.demo.frontend | confidence medium
+Service demo/frontend is slow, but the root cause is unclear.
+notification delivered to the webhook
+mode=agent model=apple-foundationmodel tool_calls=7 model_steps=11 rejected=3 repairs=0 duration=23.3s tokens in/out=20080/1057 stop=diagnosis

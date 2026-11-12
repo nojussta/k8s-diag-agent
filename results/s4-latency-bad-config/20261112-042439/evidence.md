@@ -1,0 +1,295 @@
+# Evidence: LabHighLatency demo/frontend-69bd4c6cb4-rsclr
+
+- Read-only calls: **22**, collection time: **0.04 s**
+
+## A1 Parse alert and resolve target (Alert payload + K8s API; 2 calls, 0.01 s)
+
+```json
+{
+  "alertname": "LabHighLatency",
+  "namespace": "demo",
+  "pod": "frontend-69bd4c6cb4-rsclr",
+  "container": "",
+  "deployment": "",
+  "service": "frontend",
+  "summary": "Service demo/frontend is slow",
+  "startsAt": "2026-11-12T02:26:15.907Z"
+}
+```
+
+## A2 Pod and container status (K8s API: pods; 1 calls, 0 s)
+
+```json
+{
+  "conditions": {
+    "ContainersReady": "True",
+    "Initialized": "True",
+    "PodReadyToStartContainers": "True",
+    "PodScheduled": "True",
+    "Ready": "True"
+  },
+  "containers": [
+    {
+      "image": "ghcr.io/stefanprodan/podinfo:6.15.0",
+      "lastState": null,
+      "name": "frontend",
+      "ready": true,
+      "restartCount": 0,
+      "state": {
+        "startedAt": "2026-11-12T02:24:40Z",
+        "state": "running"
+      }
+    }
+  ],
+  "node": "kursinis-worker2",
+  "phase": "Running",
+  "resources": {
+    "frontend": {
+      "limits": {
+        "memory": "128Mi"
+      },
+      "requests": {
+        "cpu": "10m",
+        "memory": "32Mi"
+      }
+    }
+  }
+}
+```
+
+## A3 Events for the pod (K8s API: events; 1 calls, 0 s)
+
+```json
+[
+  "2026-11-12T02:24:39Z Normal Scheduled x1: Successfully assigned demo/frontend-69bd4c6cb4-rsclr to kursinis-worker2",
+  "2026-11-12T02:24:40Z Normal Pulled x1: Container image \"ghcr.io/stefanprodan/podinfo:6.15.0\" already present on machine and can be accessed by the pod",
+  "2026-11-12T02:24:40Z Normal Created x1: Container created",
+  "2026-11-12T02:24:40Z Normal Started x1: Container started",
+  "2026-11-12T02:24:40Z Warning Unhealthy x1: Readiness probe failed: Get \"http://10.244.1.51:9898/readyz\": dial tcp 10.244.1.51:9898: connect: connection refused"
+]
+```
+
+## A4 Container logs (current and previous) (K8s API: pods/log; 2 calls, 0.01 s)
+
+```json
+{
+  "current": [
+    "{\"level\":\"info\",\"ts\":\"2026-11-12T02:24:40.094Z\",\"caller\":\"podinfo/main.go:170\",\"msg\":\"Starting podinfo\",\"version\":\"6.15.0\",\"revision\":\"dd507173b7b75b2312a36cabe0de5f09c1ce69c8\",\"port\":\"9898\"}",
+    "{\"level\":\"info\",\"ts\":\"2026-11-12T02:24:40.095Z\",\"caller\":\"http/server.go:273\",\"msg\":\"Starting HTTP Server.\",\"addr\":\":9898\"}",
+    "{\"level\":\"error\",\"ts\":\"2026-11-12T02:24:44.162Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+    "{\"level\":\"error\",\"ts\":\"2026-11-12T02:24:47.174Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+    "{\"level\":\"error\",\"ts\":\"2026-11-12T02:24:50.185Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+    "{\"level\":\"error\",\"ts\":\"2026-11-12T02:24:53.195Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+    "{\"level\":\"error\",\"ts\":\"2026-11-12T02:24:56.206Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+    "{\"level\":\"error\",\"ts\":\"2026-11-12T02:24:59.218Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+    "{\"level\":\"error\",\"ts\":\"2026-11-12T02:25:02.228Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+    "{\"level\":\"error\",\"ts\":\"2026-11-12T02:25:05.238Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}",
+    "{\"level\":\"error\",\"ts\":\"2026-11-12T02:25:08.250Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanproda
+```
+
+## A5 Owner, rollout history and recent change (K8s API: replicasets, deployments; 3 calls, 0 s)
+
+```json
+{
+  "conditions": [
+    "Available=True (MinimumReplicasAvailable): Deployment has minimum availability.",
+    "Progressing=True (NewReplicaSetAvailable): ReplicaSet \"frontend-69bd4c6cb4\" has successfully progressed."
+  ],
+  "deployment": "frontend",
+  "replicas": {
+    "availableReplicas": 1,
+    "readyReplicas": 1,
+    "replicas": 1,
+    "unavailableReplicas": 0,
+    "updatedReplicas": 1
+  },
+  "revisions": [
+    {
+      "change_cause": "release 2.1: frontend configuration update",
+      "created": "2026-11-11T23:57:28Z",
+      "name": "frontend-69bd4c6cb4",
+      "replicas": 1,
+      "revision": 44
+    },
+    {
+      "change_cause": "release 2.1: frontend configuration update",
+      "created": "2026-11-11T23:56:25Z",
+      "name": "frontend-6554997569",
+      "replicas": 0,
+      "revision": 43
+    },
+    {
+      "change_cause": null,
+      "created": "2026-11-12T00:58:23Z",
+      "name": "frontend-68747558f7",
+      "replicas": 0,
+      "revision": 32
+    }
+  ],
+  "template_diff_latest_vs_previous": [
+    {
+      "container": "frontend",
+      "field": "args",
+      "previous": [
+        "--port=9898",
+        "--port-metrics=9797",
+        "--level=info",
+        "--backend-url=http://backend.demo.svc.cluster.local:9898/echo"
+      ],
+      "current": [
+        "--port=9898",
+        "--port-metrics=9797",
+        "--level=info",
+        "--backend-url=http://backend.demo.svc.cluster.local:9899/echo"
+      ]
+    }
+  ]
+}
+```
+
+## A6 Restarts and last termination reason (Prometheus (kube-state-metrics); 2 calls, 0 s)
+
+```json
+{
+  "last_terminated_reason": [],
+  "restarts_15m": [
+    {
+      "container": "frontend",
+      "endpoint": "http",
+      "instance": "10.244.2.4:8080",
+      "job": "kube-state-metrics",
+      "namespace": "demo",
+      "pod": "frontend-69bd4c6cb4-rsclr",
+      "service": "kps-kube-state-metrics",
+      "uid": "34f55b7e-e764-4774-979c-4bb1e0e6b9a7",
+      "value": 0
+    }
+  ]
+}
+```
+
+## A7 Resource usage vs. limits (Prometheus (cAdvisor + kube-state-metrics); 3 calls, 0.01 s)
+
+```json
+{
+  "cpu_usage_cores_5m": [
+    {
+      "container": "frontend",
+      "cpu": "total",
+      "endpoint": "https-metrics",
+      "id": "/kubelet.slice/kubelet-kubepods.slice/kubelet-kubepods-burstable.slice/kubelet-kubepods-burstable-pod34f55b7e_e764_4774_979c_4bb1e0e6b9a7.slice/cri-containerd-7d6f3be8fbaa40602cae03753b3257bea952f2061f2cc3ed51b198cf4d58ca39.scope",
+      "image": "ghcr.io/stefanprodan/podinfo:6.15.0",
+      "instance": "172.18.0.2:10250",
+      "job": "kubelet",
+      "metrics_path": "/metrics/cadvisor",
+      "name": "7d6f3be8fbaa40602cae03753b3257bea952f2061f2cc3ed51b198cf4d58ca39",
+      "namespace": "demo",
+      "node": "kursinis-worker2",
+      "pod": "frontend-69bd4c6cb4-rsclr",
+      "service": "kps-kubelet",
+      "value": 0.0005803172760765025
+    }
+  ],
+  "memory_limit_bytes": [
+    {
+      "__name__": "kube_pod_container_resource_limits",
+      "container": "frontend",
+      "endpoint": "http",
+      "instance": "10.244.2.4:8080",
+      "job": "kube-state-metrics",
+      "namespace": "demo",
+      "node": "kursinis-worker2",
+      "pod": "frontend-69bd4c6cb4-rsclr",
+      "resource": "memory",
+      "service": "kps-kube-state-metrics",
+      "uid": "34f55b7e-e764-4774-979c-4bb1e0e6b9a7",
+      "unit": "byte",
+      "value": 134217728
+    }
+  ],
+  "memory_working_set_max_15m_bytes": [
+    {
+      "container": "frontend",
+      "endpoint": "https-metrics",
+      "id": "/kubelet.slice/kubelet-kubepods.slice/kubelet-kubepods-burstable.slice/kubelet-kubepods-burstable-pod34f55b7e_e764_4774_979c_4bb1e0e6b9a7.slice/cri-containerd-7d6f3be8fbaa40602cae03753b3257bea952f2061f2cc3ed51b198cf4d58ca39.scope",
+      "image": "ghcr.io/stefanprodan/podinfo:6.15.0",
+      "instance": "172.18.0.2:10250",
+      "job": "kubelet",
+      "metrics_path": "/metrics/cadvisor",
+      "name": "7d6f3be8fbaa40602cae03753b3257bea952f2061f2cc3ed51b198cf4d58ca39",
+      "namespace": "demo",
+      "node": "kursinis-worker2",
+      "pod": "frontend-69bd4c6cb4-rsclr",
+      "service": "kps-kubelet",
+      "value": 26861568
+    }
+  ]
+}
+```
+
+## A8 Service endpoints of the workload (K8s API: services, endpointslices; 2 calls, 0 s)
+
+```json
+[
+  {
+    "endpoints": 1,
+    "ready": 1,
+    "service": "frontend"
+  }
+]
+```
+
+## A9 Node conditions (K8s API: nodes; 1 calls, 0 s)
+
+```json
+{
+  "conditions": {
+    "DiskPressure": "False",
+    "MemoryPressure": "False",
+    "PIDPressure": "False",
+    "Ready": "True"
+  },
+  "node": "kursinis-worker2"
+}
+```
+
+## A10 Log and event history (Loki) (Loki; 2 calls, 0.01 s)
+
+```json
+{
+  "events": [
+    "name=frontend-69bd4c6cb4-rsclr kind=Pod objectAPIversion=v1 objectRV=18228 eventRV=18232 reportingcontroller=default-scheduler sourcecomponent=default-scheduler reason=Scheduled type=Normal count=1 msg=\"Successfully assigned demo/frontend-69bd4c6cb4-rsclr to kursinis-worker2\" ",
+    "name=frontend-69bd4c6cb4 kind=ReplicaSet objectAPIversion=apps/v1 objectRV=18226 eventRV=18231 reportingcontroller=replicaset-controller sourcecomponent=replicaset-controller reason=SuccessfulCreate type=Normal count=1 msg=\"Created pod: frontend-69bd4c6cb4-rsclr\" ",
+    "name=frontend-69bd4c6cb4-rsclr kind=Pod objectAPIversion=v1 objectRV=18230 eventRV=18245 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Unhealthy type=Warning count=1 msg=\"Readiness probe failed: Get \\\"http://10.244.1.51:9898/readyz\\\": dial tcp 10.244.1.51:9898: connect: connection refused\" ",
+    "name=frontend-69bd4c6cb4-rsclr kind=Pod objectAPIversion=v1 objectRV=18230 eventRV=18244 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Started type=Normal count=1 msg=\"Container started\" ",
+    "name=frontend-69bd4c6cb4-rsclr kind=Pod objectAPIversion=v1 objectRV=18230 eventRV=18243 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Created type=Normal count=1 msg=\"Container created\" ",
+    "name=frontend-69bd4c6cb4-rsclr kind=Pod objectAPIversion=v1 objectRV=18230 eventRV=18241 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Pulled type=Normal count=1 msg=\"Container image \\\"ghcr.io/stefanprodan/podinfo:6.15.0\\\" already present on machine and can be accessed by the pod\" "
+  ],
+  "pod_logs": [
+    "{\"level\":\"info\",\"ts\":\"2026-11-12T02:24:40.094Z\",\"caller\":\"podinfo/main.go:170\",\"msg\":\"Starting podinfo\",\"version\":\"6.15.0\",\"revision\":\"dd507173b7b75b2312a36cabe0de5f09c1ce69c8\",\"port\":\"9898\"}\n",
+    "{\"level\":\"info\",\"ts\":\"2026-11-12T02:24:40.095Z\",\"caller\":\"http/server.go:273\",\"msg\":\"Starting HTTP Server.\",\"addr\":\":9898\"}\n",
+    "{\"level\":\"error\",\"ts\":\"2026-11-12T02:24:44.162Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+    "{\"level\":\"error\",\"ts\":\"2026-11-12T02:24:47.174Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+    "{\"level\":\"error\",\"ts\":\"2026-11-12T02:24:50.185Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+    "{\"level\":\"error\",\"ts\":\"2026-11-12T02:24:53.195Z\",\"caller\":\"http/echo.go:65\",\"msg\":\"backend call failed\",\"error\":\"Post \\\"http://backend.demo.svc.cluster.local:9899/echo\\\": context canceled\",\"url\":\"http://backend.demo.svc.cluster.local:9899/echo\",\"stacktrace\":\"github.com/stefanprodan/podinfo/pkg/api/http.(*Server).echoHandler.func1\\n\\t/podinfo/pkg/api/http/echo.go:65\"}\n",
+    "{\"level\":\"error\",\"ts\":\"2026-11-12T02:24:56.206Z\",\"caller
+```
+
+## A11 Service golden signals (RED) (Prometheus (application metrics); 3 calls, 0 s)
+
+```json
+{
+  "error_rate_5xx_rps": [],
+  "latency_p95_s": [
+    {
+      "value": 2.2811149389228946
+    }
+  ],
+  "request_rate_rps": [
+    {
+      "value": 0.5954604749493753
+    }
+  ]
+}
+```
+

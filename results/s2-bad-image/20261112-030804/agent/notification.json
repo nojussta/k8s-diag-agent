@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-12T01:12:33Z",
+    "text": "Incident triage: LabPodNotReady\nProbable cause: Unknown in demo/frontend (confidence medium)\nNo clear evidence of a specific cause for the pod's non-readiness. Further investigation is needed to determine the root cause.\n\nEvidence:\n- [t3 get_pod_status] Pod demo/frontend-68747558f7-lpnrh has been in a non-ready phase for longer than 2 minutes.\n- [t3 get_pod_status] Pod demo/frontend-68747558f7-lpnrh is not ready.\n- [t4 get_rollout_history] Pod demo/frontend-68747558f7-lpnrh has been in a non-ready phase for longer than 2 minutes.\n- [t5 query_logs] Pod demo/frontend-68747558f7-lpnrh has been in a non-ready phase for longer than 2 minutes.\n- [t6 query_metrics] Pod demo/frontend-68747558f7-lpnrh has been in a non-ready phase for longer than 2 minutes.\n- [t8 get_service_endpoints] Pod demo/frontend-68747558f7-lpnrh has been in a non-ready phase for longer than 2 minutes.\n- [t8 get_service_endpoints] Pod demo/frontend-68747558f7-lpnrh has been in a non-ready phase for longer than 2 minutes.\n\nSuggested next steps (not executed; a person decides):\n- Check Deployment: kubectl describe deployment demo/frontend\n\nUnknown: No clear evidence of a specific cause for the pod's non-readiness.\n\nMethod agent, model apple-foundationmodel, 7 read-only calls, 48.8 s.\n"
+  }
+]

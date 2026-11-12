@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-12T01:50:47Z",
+    "text": "Incident triage: LabHighLatency\nProbable cause: Scheduling in demo/frontend (confidence high)\nService demo/frontend-69bd4c6cb4-xjfk6 is Pending with a FailedScheduling event, indicating that the pod is not being scheduled properly.\n\nEvidence:\n- [A1 alert] Service demo/frontend is slow\n- [A10 A10] Service demo/frontend-69bd4c6cb4-xjfk6 is Pending with a FailedScheduling event\n- [A11 A11] Service demo/frontend-69bd4c6cb4-xjfk6 has a 95th percentile latency of 1.96 seconds\n\nSuggested next steps (not executed; a person decides):\n- Review the deployment configuration and ensure that the workload is properly scaled and that there are no misconfigurations.\n\nMethod pipeline, model apple-foundationmodel, 22 read-only calls, 27.6 s.\n"
+  }
+]

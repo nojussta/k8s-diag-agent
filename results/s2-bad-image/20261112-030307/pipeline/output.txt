@@ -1,0 +1,5 @@
+mode=pipeline provider=apfel model=apple-foundationmodel
+Unknown | Pod demo/frontend-68747558f7-qr4m7 | confidence medium
+Pod demo/frontend-68747558f7-qr4m7 is not ready, and the container logs are inconclusive.
+notification delivered to the webhook
+mode=pipeline model=apple-foundationmodel tool_calls=19 model_steps=1 rejected=0 repairs=0 duration=10.3s tokens in/out=1842/531 stop=diagnosis

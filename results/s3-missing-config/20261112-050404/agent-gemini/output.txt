@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/frontend | confidence high
+The pod 'frontend-6df678c5fd-df5hj' is failing to start because it cannot find the required ConfigMap 'frontend-config'.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=7 model_steps=8 rejected=0 repairs=0 duration=38.6s tokens in/out=25676/776 stop=diagnosis

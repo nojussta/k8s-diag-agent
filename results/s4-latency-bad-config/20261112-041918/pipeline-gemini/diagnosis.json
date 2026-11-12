@@ -1,0 +1,35 @@
+{
+  "summary": "The frontend service is experiencing high latency due to a misconfigured backend URL following a recent deployment.",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "demo/deployment/frontend",
+    "explanation": "A recent configuration change updated the --backend-url argument to point to port 9899, but the backend service is likely not reachable or not configured to listen on that port, causing connection timeouts in the application logs."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A5",
+      "source": "K8s API: deployments",
+      "fact": "A recent deployment update (revision 42) changed the --backend-url argument from port 9898 to 9899."
+    },
+    {
+      "tool_call": "A4",
+      "source": "K8s API: pods/log",
+      "fact": "Application logs show repeated backend call failures with 'context canceled' when attempting to connect to 'http://backend.demo.svc.cluster.local:9899/echo'."
+    },
+    {
+      "tool_call": "A11",
+      "source": "Prometheus",
+      "fact": "The 95th percentile latency is 2.3 seconds, significantly exceeding the 500ms threshold."
+    }
+  ],
+  "impact": "The service is slow, with high P95 latency and constant backend connection failures, causing user-facing performance degradation.",
+  "next_steps": [
+    {
+      "action": "Revert the frontend deployment to the previous revision (32) or correct the backend URL configuration to point to the correct service port.",
+      "command": "kubectl set env deployment/frontend --args='--backend-url=http://backend.demo.svc.cluster.local:9898/echo'",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

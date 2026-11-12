@@ -1,0 +1,5 @@
+mode=agent provider=apfel model=apple-foundationmodel
+ConfigurationError | demo/backend | confidence medium
+Service demo/backend is receiving almost no requests. Pod status validation failed for backend-5b97dd7dcb-f44wr.
+notification delivered to the webhook
+mode=agent model=apple-foundationmodel tool_calls=2 model_steps=3 rejected=0 repairs=0 duration=55.4s tokens in/out=5640/3703 stop=diagnosis

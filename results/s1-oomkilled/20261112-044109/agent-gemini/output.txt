@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+OOMKilled | demo/deployment/backend (container backend) | confidence high
+The backend pod is crashing due to an OOMKilled error, likely caused by an insufficient memory limit after a recent configuration change.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=9 model_steps=12 rejected=2 repairs=0 duration=114.3s tokens in/out=47140/950 stop=diagnosis

@@ -1,0 +1,45 @@
+{
+  "summary": "The backend pod is crashing due to an OOMKilled error, likely caused by an insufficient memory limit after a recent configuration change.",
+  "root_cause": {
+    "category": "OOMKilled",
+    "component": "demo/deployment/backend (container backend)",
+    "explanation": "A recent deployment revision (revision 12) introduced a new argument '--stress-memory=256' which increased the container's memory consumption beyond the configured limit of 128Mi."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "t1",
+      "source": "K8s API: pods",
+      "fact": "The backend container is in 'CrashLoopBackOff' state with 'OOMKilled' as the last termination reason and an exit code of 137."
+    },
+    {
+      "tool_call": "t3",
+      "source": "K8s API: replicasets, deployments",
+      "fact": "The latest deployment revision 12 added the flag '--stress-memory=256' to the backend container arguments."
+    },
+    {
+      "tool_call": "t1",
+      "source": "K8s API: pods",
+      "fact": "The container has a memory limit of 128Mi."
+    },
+    {
+      "tool_call": "t2",
+      "source": "Prometheus",
+      "fact": "The working set memory usage is near the 128Mi limit (128,729,088 bytes)."
+    }
+  ],
+  "impact": "The backend service is unavailable, which may impact services depending on it.",
+  "next_steps": [
+    {
+      "action": "Increase the memory limit for the backend container in the deployment spec to accommodate the increased memory usage.",
+      "command": "kubectl edit deployment backend -n demo",
+      "requires_human_approval": true
+    },
+    {
+      "action": "Alternatively, revert to the previous deployment revision if the memory-stress argument is not required.",
+      "command": "kubectl rollout undo deployment/backend -n demo",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

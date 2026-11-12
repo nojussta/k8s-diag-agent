@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-12T01:46:29Z",
+    "text": "Incident triage: LabPodNotReady\nProbable cause: Unknown in Pod demo/frontend-68747558f7-qr4m7 (confidence medium)\nMultiple container logs indicate that the frontend container is not ready, but the exact reason is unclear.\n\nEvidence:\n- [A1 alert] Pod demo/frontend-68747558f7-qr4m7 is not ready\n- [A2 A2] Container frontend is not ready\n- [A4 A4] Container frontend is not ready\n- [A6 A6] Container frontend is not ready\n- [A7 A7] Container frontend is not ready\n- [A11 A11] Container frontend is not ready\n- [A8 A8] Container frontend is not ready\n- [A10 A10] Container frontend is not ready\n- [A9 A9] Container frontend is not ready\n- [A3 A3] Container frontend is not ready\n- [A5 A5] Container frontend is not ready\n\nSuggested next steps (not executed; a person decides):\n- Check container logs: kubectl logs frontend-68747558f7-qr4m7\n\nUnknown: Multiple container logs indicate that the frontend container is not ready, but the exact reason is unclear.\n\nMethod pipeline, model apple-foundationmodel, 19 read-only calls, 10.3 s.\n"
+  }
+]

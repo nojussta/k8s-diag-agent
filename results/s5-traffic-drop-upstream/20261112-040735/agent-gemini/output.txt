@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/backend | confidence medium
+The backend service is experiencing a traffic drop because the frontend service is failing to call it due to context cancellation, likely due to a deployment misconfiguration in the backend.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=15 model_steps=18 rejected=1 repairs=0 duration=101.1s tokens in/out=105367/1111 stop=diagnosis

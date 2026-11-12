@@ -1,0 +1,5 @@
+mode=pipeline provider=apfel model=apple-foundationmodel
+Unknown | Pod demo/frontend-68747558f7-lpnrh | confidence medium
+Pod demo/frontend-68747558f7-lpnrh is not ready for 2 minutes. Further investigation is needed to determine the root cause.
+notification delivered to the webhook
+mode=pipeline model=apple-foundationmodel tool_calls=19 model_steps=1 rejected=0 repairs=0 duration=56.6s tokens in/out=1204/698 stop=diagnosis

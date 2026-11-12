@@ -1,0 +1,5 @@
+mode=agent provider=apfel model=apple-foundationmodel
+ImagePullError | frontend | confidence medium
+ImagePullError: Failed to pull image, causing the pod to be in a non-ready state.
+notification delivered to the webhook
+mode=agent model=apple-foundationmodel tool_calls=7 model_steps=10 rejected=2 repairs=0 duration=26.2s tokens in/out=22356/1090 stop=diagnosis

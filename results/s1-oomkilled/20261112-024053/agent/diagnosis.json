@@ -1,0 +1,50 @@
+{
+  "summary": "Container backend of pod demo/backend-7b8d9f4db-qgxx8 is OOMKilled, causing it to crash loop.",
+  "root_cause": {
+    "category": "OOMKilled",
+    "component": "namespace/deployment/name",
+    "explanation": "Container backend is OOMKilled, causing it to crash loop."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "t1",
+      "source": "alert",
+      "fact": "Container backend of pod demo/backend-7b8d9f4db-qgxx8 is in waiting state (reason: CrashLoopBackOff) for at least 1 minute."
+    },
+    {
+      "tool_call": "t1",
+      "source": "alert",
+      "fact": "Pod demo/backend-7b8d9f4db-qgxx8 (backend) is crash looping."
+    },
+    {
+      "tool_call": "t2",
+      "source": "t2",
+      "fact": "Container backend is OOMKilled."
+    },
+    {
+      "tool_call": "t2",
+      "source": "t2",
+      "fact": "Container backend is terminated."
+    },
+    {
+      "tool_call": "t2",
+      "source": "t2",
+      "fact": "Container backend is restarting."
+    },
+    {
+      "tool_call": "t4",
+      "source": "t4",
+      "fact": "Container backend is ready."
+    }
+  ],
+  "impact": "Pod is not running.",
+  "next_steps": [
+    {
+      "action": "Check the deployment status",
+      "command": "kubectl get deployment demo/backend",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

@@ -1,0 +1,12 @@
+{
+  "tool_calls": 7,
+  "rejected_calls": 2,
+  "repairs": 0,
+  "duration_s": 26.123533625,
+  "input_tokens": 17871,
+  "output_tokens": 1355,
+  "stop_reason": "diagnosis",
+  "model": "apple-foundationmodel",
+  "model_steps": 10,
+  "mode": "agent"
+}

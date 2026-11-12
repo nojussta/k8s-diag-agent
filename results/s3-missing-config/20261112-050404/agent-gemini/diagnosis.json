@@ -1,0 +1,45 @@
+{
+  "summary": "The pod 'frontend-6df678c5fd-df5hj' is failing to start because it cannot find the required ConfigMap 'frontend-config'.",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "demo/deployment/frontend",
+    "explanation": "The deployment 'frontend' was updated to use a ConfigMap 'frontend-config' (Revision 54), but that ConfigMap does not exist in the 'demo' namespace."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "t1",
+      "source": "K8s API: pods",
+      "fact": "Pod is in 'Pending' state with message: 'configmap \"frontend-config\" not found' and reason 'CreateContainerConfigError'."
+    },
+    {
+      "tool_call": "t2",
+      "source": "K8s API: replicasets, deployments",
+      "fact": "Rollout history shows Revision 54 introduced a change to use 'frontend-config' via ConfigMapKeyRef."
+    },
+    {
+      "tool_call": "t3",
+      "source": "K8s API: events",
+      "fact": "Kubernetes events confirm repeated warnings: 'Error: configmap \"frontend-config\" not found'."
+    },
+    {
+      "tool_call": "t6",
+      "source": "Prometheus",
+      "fact": "Querying for existing ConfigMaps in namespace 'demo' shows only 'kube-root-ca.crt' exists, 'frontend-config' is missing."
+    }
+  ],
+  "impact": "The 'frontend' service is partially unavailable, as only one replica is running (from the previous revision) and the new replica fails to start.",
+  "next_steps": [
+    {
+      "action": "Create the missing ConfigMap 'frontend-config' in the 'demo' namespace with the required keys.",
+      "command": "kubectl create configmap frontend-config --from-literal=ui.color=blue -n demo",
+      "requires_human_approval": true
+    },
+    {
+      "action": "Alternatively, rollback the deployment to the previous stable revision.",
+      "command": "kubectl rollout undo deployment/frontend -n demo",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

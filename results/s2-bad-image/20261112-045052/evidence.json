@@ -1,0 +1,303 @@
+{
+  "target": {
+    "alertname": "LabPodNotReady",
+    "namespace": "demo",
+    "pod": "frontend-68747558f7-8bzbd",
+    "container": "",
+    "deployment": "",
+    "summary": "Pod demo/frontend-68747558f7-8bzbd is not ready",
+    "startsAt": "2026-11-12T02:53:15.907Z"
+  },
+  "total_calls": 19,
+  "total_duration_s": 0.06,
+  "actions": [
+    {
+      "id": "A1",
+      "name": "Parse alert and resolve target",
+      "source": "Alert payload + K8s API",
+      "ok": true,
+      "calls": 0,
+      "duration_s": 0,
+      "output": {
+        "alertname": "LabPodNotReady",
+        "namespace": "demo",
+        "pod": "frontend-68747558f7-8bzbd",
+        "container": "",
+        "deployment": "",
+        "summary": "Pod demo/frontend-68747558f7-8bzbd is not ready",
+        "startsAt": "2026-11-12T02:53:15.907Z"
+      }
+    },
+    {
+      "id": "A2",
+      "name": "Pod and container status",
+      "source": "K8s API: pods",
+      "ok": true,
+      "calls": 1,
+      "duration_s": 0,
+      "output": {
+        "conditions": {
+          "ContainersReady": "False",
+          "Initialized": "True",
+          "PodReadyToStartContainers": "True",
+          "PodScheduled": "True",
+          "Ready": "False"
+        },
+        "containers": [
+          {
+            "image": "ghcr.io/stefanprodan/podinfo:6.15.99",
+            "lastState": null,
+            "name": "frontend",
+            "ready": false,
+            "restartCount": 0,
+            "state": {
+              "message": "Back-off pulling image \"ghcr.io/stefanprodan/podinfo:6.15.99\": ErrImagePull: rpc error: code = NotFound desc = failed to pull and unpack image \"ghcr.io/stefanprodan/podinfo:6.15.99\": failed to resolve reference \"ghcr.io/stefanprodan/podinfo:6.15.99\": ghcr.io/stefanprodan/podinfo:6.15.99: not found",
+              "reason": "ImagePullBackOff",
+              "state": "waiting"
+            }
+          }
+        ],
+        "node": "kursinis-worker2",
+        "phase": "Pending",
+        "resources": {
+          "frontend": {
+            "limits": {
+              "memory": "128Mi"
+            },
+            "requests": {
+              "cpu": "10m",
+              "memory": "32Mi"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "A3",
+      "name": "Events for the pod",
+      "source": "K8s API: events",
+      "ok": true,
+      "calls": 1,
+      "duration_s": 0,
+      "output": [
+        "2026-11-12T02:50:52Z Normal Scheduled x1: Successfully assigned demo/frontend-68747558f7-8bzbd to kursinis-worker2",
+        "2026-11-12T02:52:14Z Normal Pulling x4: Pulling image \"ghcr.io/stefanprodan/podinfo:6.15.99\"",
+        "2026-11-12T02:52:15Z Warning Failed x4: Failed to pull image \"ghcr.io/stefanprodan/podinfo:6.15.99\": rpc error: code = NotFound desc = failed to pull and unpack image \"ghcr.io/stefanprodan/podinfo:6.15.99\": failed to resolve reference \"ghcr.io/stefanprodan/podinfo:6.15.99\": ghcr.io/stefanprodan/podinfo:6.15.99: not found",
+        "2026-11-12T02:52:15Z Warning Failed x4: Error: ErrImagePull",
+        "2026-11-12T02:53:08Z Normal BackOff x8: Back-off pulling image \"ghcr.io/stefanprodan/podinfo:6.15.99\"",
+        "2026-11-12T02:53:08Z Warning Failed x8: Error: ImagePullBackOff"
+      ]
+    },
+    {
+      "id": "A4",
+      "name": "Container logs (current and previous)",
+      "source": "K8s API: pods/log",
+      "ok": false,
+      "calls": 1,
+      "duration_s": 0,
+      "output": "ERROR: the server rejected our request for an unknown reason (get pods frontend-68747558f7-8bzbd)"
+    },
+    {
+      "id": "A5",
+      "name": "Owner, rollout history and recent change",
+      "source": "K8s API: replicasets, deployments",
+      "ok": true,
+      "calls": 3,
+      "duration_s": 0.01,
+      "output": {
+        "conditions": [
+          "Available=True (MinimumReplicasAvailable): Deployment has minimum availability.",
+          "Progressing=True (ReplicaSetUpdated): ReplicaSet \"frontend-68747558f7\" is progressing."
+        ],
+        "deployment": "frontend",
+        "replicas": {
+          "availableReplicas": 1,
+          "readyReplicas": 1,
+          "replicas": 2,
+          "unavailableReplicas": 1,
+          "updatedReplicas": 1
+        },
+        "revisions": [
+          {
+            "change_cause": null,
+            "created": "2026-11-12T00:58:23Z",
+            "name": "frontend-68747558f7",
+            "replicas": 1,
+            "revision": 48
+          },
+          {
+            "change_cause": "release 2.1: frontend configuration update",
+            "created": "2026-11-11T23:56:25Z",
+            "name": "frontend-6554997569",
+            "replicas": 1,
+            "revision": 47
+          },
+          {
+            "change_cause": "release 2.1: frontend configuration update",
+            "created": "2026-11-11T23:57:28Z",
+            "name": "frontend-69bd4c6cb4",
+            "replicas": 0,
+            "revision": 44
+          }
+        ],
+        "template_diff_latest_vs_previous": [
+          {
+            "container": "frontend",
+            "field": "image",
+            "previous": "ghcr.io/stefanprodan/podinfo:6.15.0",
+            "current": "ghcr.io/stefanprodan/podinfo:6.15.99"
+          }
+        ]
+      }
+    },
+    {
+      "id": "A6",
+      "name": "Restarts and last termination reason",
+      "source": "Prometheus (kube-state-metrics)",
+      "ok": true,
+      "calls": 2,
+      "duration_s": 0.01,
+      "output": {
+        "last_terminated_reason": [],
+        "restarts_15m": [
+          {
+            "container": "frontend",
+            "endpoint": "http",
+            "instance": "10.244.2.4:8080",
+            "job": "kube-state-metrics",
+            "namespace": "demo",
+            "pod": "frontend-68747558f7-8bzbd",
+            "service": "kps-kube-state-metrics",
+            "uid": "595ea217-104c-4bf8-86cd-94e404d8ceb5",
+            "value": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "A7",
+      "name": "Resource usage vs. limits",
+      "source": "Prometheus (cAdvisor + kube-state-metrics)",
+      "ok": true,
+      "calls": 3,
+      "duration_s": 0.01,
+      "output": {
+        "cpu_usage_cores_5m": [],
+        "memory_limit_bytes": [
+          {
+            "__name__": "kube_pod_container_resource_limits",
+            "container": "frontend",
+            "endpoint": "http",
+            "instance": "10.244.2.4:8080",
+            "job": "kube-state-metrics",
+            "namespace": "demo",
+            "node": "kursinis-worker2",
+            "pod": "frontend-68747558f7-8bzbd",
+            "resource": "memory",
+            "service": "kps-kube-state-metrics",
+            "uid": "595ea217-104c-4bf8-86cd-94e404d8ceb5",
+            "unit": "byte",
+            "value": 134217728
+          }
+        ],
+        "memory_working_set_max_15m_bytes": []
+      }
+    },
+    {
+      "id": "A8",
+      "name": "Service endpoints of the workload",
+      "source": "K8s API: services, endpointslices",
+      "ok": true,
+      "calls": 2,
+      "duration_s": 0,
+      "output": [
+        {
+          "endpoints": 2,
+          "ready": 1,
+          "service": "frontend"
+        }
+      ]
+    },
+    {
+      "id": "A9",
+      "name": "Node conditions",
+      "source": "K8s API: nodes",
+      "ok": true,
+      "calls": 1,
+      "duration_s": 0,
+      "output": {
+        "conditions": {
+          "DiskPressure": "False",
+          "MemoryPressure": "False",
+          "PIDPressure": "False",
+          "Ready": "True"
+        },
+        "node": "kursinis-worker2"
+      }
+    },
+    {
+      "id": "A10",
+      "name": "Log and event history (Loki)",
+      "source": "Loki",
+      "ok": true,
+      "calls": 2,
+      "duration_s": 0.02,
+      "output": {
+        "events": [
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21219 eventRV=21226 reportingcontroller=default-scheduler sourcecomponent=default-scheduler reason=Scheduled type=Normal count=1 msg=\"Successfully assigned demo/frontend-68747558f7-8bzbd to kursinis-worker2\" ",
+          "name=frontend-68747558f7 kind=ReplicaSet objectAPIversion=apps/v1 objectRV=21218 eventRV=21222 reportingcontroller=replicaset-controller sourcecomponent=replicaset-controller reason=SuccessfulCreate type=Normal count=1 msg=\"Created pod: frontend-68747558f7-8bzbd\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21236 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Failed type=Warning count=1 msg=\"Error: ImagePullBackOff\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21234 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Failed type=Warning count=1 msg=\"Error: ErrImagePull\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21235 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Normal count=1 msg=\"Back-off pulling image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\"\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21233 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Failed type=Warning count=1 msg=\"Failed to pull image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\": rpc error: code = NotFound desc = failed to pull and unpack image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\": failed to resolve reference \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\": ghcr.io/stefanprodan/podinfo:6.15.99: not found\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21231 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Pulling type=Normal count=1 msg=\"Pulling image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\"\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21262 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Pulling type=Normal count=2 msg=\"Pulling image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\"\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21265 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Failed type=Warning count=2 msg=\"Error: ErrImagePull\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21264 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Failed type=Warning count=2 msg=\"Failed to pull image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\": rpc error: code = NotFound desc = failed to pull and unpack image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\": failed to resolve reference \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\": ghcr.io/stefanprodan/podinfo:6.15.99: not found\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21285 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Failed type=Warning count=2 msg=\"Error: ImagePullBackOff\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21283 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Normal count=2 msg=\"Back-off pulling image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\"\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21311 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Pulling type=Normal count=3 msg=\"Pulling image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\"\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21314 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Failed type=Warning count=3 msg=\"Error: ErrImagePull\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21313 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Failed type=Warning count=3 msg=\"Failed to pull image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\": rpc error: code = NotFound desc = failed to pull and unpack image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\": failed to resolve reference \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\": ghcr.io/stefanprodan/podinfo:6.15.99: not found\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21335 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Failed type=Warning count=3 msg=\"Error: ImagePullBackOff\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21333 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Normal count=3 msg=\"Back-off pulling image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\"\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21358 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Failed type=Warning count=4 msg=\"Error: ImagePullBackOff\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21357 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Normal count=4 msg=\"Back-off pulling image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\"\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21385 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Pulling type=Normal count=4 msg=\"Pulling image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\"\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21389 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Failed type=Warning count=4 msg=\"Error: ErrImagePull\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21388 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Failed type=Warning count=4 msg=\"Failed to pull image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\": rpc error: code = NotFound desc = failed to pull and unpack image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\": failed to resolve reference \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\": ghcr.io/stefanprodan/podinfo:6.15.99: not found\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21410 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Failed type=Warning count=5 msg=\"Error: ImagePullBackOff\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21408 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Normal count=5 msg=\"Back-off pulling image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\"\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21438 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Failed type=Warning count=6 msg=\"Error: ImagePullBackOff\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21436 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Normal count=6 msg=\"Back-off pulling image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\"\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21459 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Failed type=Warning count=7 msg=\"Error: ImagePullBackOff\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21458 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Normal count=7 msg=\"Back-off pulling image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\"\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21481 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=Failed type=Warning count=8 msg=\"Error: ImagePullBackOff\" ",
+          "name=frontend-68747558f7-8bzbd kind=Pod objectAPIversion=v1 objectRV=21224 eventRV=21480 reportinginstance=kursinis-worker2 reportingcontroller=kubelet sourcecomponent=kubelet sourcehost=kursinis-worker2 reason=BackOff type=Normal count=8 msg=\"Back-off pulling image \\\"ghcr.io/stefanprodan/podinfo:6.15.99\\\"\" "
+        ],
+        "pod_logs": []
+      }
+    },
+    {
+      "id": "A11",
+      "name": "Service golden signals (RED)",
+      "source": "Prometheus (application metrics)",
+      "ok": true,
+      "calls": 3,
+      "duration_s": 0.01,
+      "output": {
+        "error_rate_5xx_rps": [],
+        "latency_p95_s": [
+          {
+            "value": 0.00475
+          }
+        ],
+        "request_rate_rps": [
+          {
+            "value": 0.9929789720036069
+          }
+        ]
+      }
+    }
+  ]
+}

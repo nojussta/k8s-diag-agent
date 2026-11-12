@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-12T01:46:19Z",
+    "text": "Incident triage: LabPodNotReady\nProbable cause: ImagePullError in podinfo (confidence medium)\nFailed to pull image podinfo:6.15.99\n\nEvidence:\n- [A1 alert] Pod demo/frontend-68747558f7-4vmkr is not ready\n- [A2 A2] ImagePullError: rpc error: code = NotFound desc = failed to pull and unpack image \"ghcr.io/stefanprodan/podinfo:6.15.99\": failed to resolve refere...[cut]\n- [A4 A4] ERROR: the server rejected our request for an unknown reason (get pods frontend-68747558f7-4vmkr)\n\nSuggested next steps (not executed; a person decides):\n- Check image pull logs: kubectl logs frontend-68747558f7-4vmkr\n\nMethod pipeline, model apple-foundationmodel, 19 read-only calls, 7.4 s.\n"
+  }
+]

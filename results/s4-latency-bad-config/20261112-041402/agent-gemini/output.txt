@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/frontend | confidence high
+The frontend service is experiencing high latency due to misconfigured backend URL which causes repeated connection failures.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=15 model_steps=17 rejected=0 repairs=0 duration=87.9s tokens in/out=114334/1060 stop=diagnosis

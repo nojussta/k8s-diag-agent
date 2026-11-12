@@ -1,0 +1,40 @@
+{
+  "summary": "The pod 'demo/backend-7b8d9f4db-jbvzs' is failing due to 'OOMKilled' errors, caused by an insufficient memory limit after a configuration change.",
+  "root_cause": {
+    "category": "OOMKilled",
+    "component": "demo/deployment/backend",
+    "explanation": "A recent deployment update (revision 12) added the argument '--stress-memory=256' to the 'backend' container, which causes it to exceed the allocated memory limit of 128Mi."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A2",
+      "source": "K8s API: pods",
+      "fact": "The container 'backend' terminated with exitCode 137 and reason 'OOMKilled'."
+    },
+    {
+      "tool_call": "A5",
+      "source": "K8s API: deployments",
+      "fact": "The latest revision (12) introduced the flag '--stress-memory=256' to the container args."
+    },
+    {
+      "tool_call": "A2",
+      "source": "K8s API: pods",
+      "fact": "The container 'backend' has a memory limit of 128Mi."
+    }
+  ],
+  "impact": "One replica of the 'backend' deployment is crashlooping, though the service remains available with 2 out of 3 replicas ready.",
+  "next_steps": [
+    {
+      "action": "Revert the deployment 'backend' to the previous revision to remove the memory-stressing flag.",
+      "command": "kubectl rollout undo deployment/backend -n demo",
+      "requires_human_approval": true
+    },
+    {
+      "action": "Alternatively, increase the memory limit for the 'backend' container in the deployment spec if the flag is required.",
+      "command": "kubectl edit deployment/backend -n demo",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

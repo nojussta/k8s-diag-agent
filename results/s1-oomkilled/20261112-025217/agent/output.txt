@@ -1,0 +1,3 @@
+mode=agent provider=apfel model=apple-foundationmodel
+mode=agent model=apple-foundationmodel tool_calls=8 model_steps=13 rejected=2 repairs=1 duration=84.4s tokens in/out=34188/4459 stop=invalid_diagnosis
+error: evidence[6] cites "t11", which is not a tool call that ran

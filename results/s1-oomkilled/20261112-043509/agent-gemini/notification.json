@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-12T02:38:48Z",
+    "text": "Incident triage: LabPodCrashLooping\nProbable cause: OOMKilled in demo/deployment/backend (container backend) (confidence high)\nThe latest deployment revision increased memory usage with the '--stress-memory=256' flag, which exceeds the defined memory limit of 128Mi.\n\nEvidence:\n- [t1 K8s API: pods] Container backend status is OOMKilled with exitCode 137.\n- [t2 Prometheus] The container's memory limit is 128Mi (134217728 bytes) and the observed memory working set is hovering around 126Mi.\n- [t3 K8s API: replicasets, deployments] The latest revision added '--stress-memory=256' to the arguments of the backend container.\n\nSuggested next steps (not executed; a person decides):\n- Increase the memory limit for the backend container in the deployment spec to accommodate the increased memory usage, or remove the stress argument.: kubectl edit deployment backend -n demo\n\nMethod agent, model gemini-3.1-flash-lite, 10 read-only calls, 93.1 s.\n"
+  }
+]

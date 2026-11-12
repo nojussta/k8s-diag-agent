@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-12T00:43:40Z",
+    "text": "Incident triage: LabPodCrashLooping\nProbable cause: OOMKilled in namespace/deployment/name (confidence high)\nContainer backend is OOMKilled, causing it to crash loop.\n\nEvidence:\n- [t1 alert] Container backend of pod demo/backend-7b8d9f4db-qgxx8 is in waiting state (reason: CrashLoopBackOff) for at least 1 minute.\n- [t1 alert] Pod demo/backend-7b8d9f4db-qgxx8 (backend) is crash looping.\n- [t2 t2] Container backend is OOMKilled.\n- [t2 t2] Container backend is terminated.\n- [t2 t2] Container backend is restarting.\n- [t4 t4] Container backend is ready.\n\nSuggested next steps (not executed; a person decides):\n- Check the deployment status: kubectl get deployment demo/backend\n\nMethod agent, model apple-foundationmodel, 4 read-only calls, 38.7 s.\n"
+  }
+]

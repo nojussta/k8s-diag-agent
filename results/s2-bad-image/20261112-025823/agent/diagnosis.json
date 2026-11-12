@@ -1,0 +1,42 @@
+{
+  "summary": "ImagePullError: Failed to pull image, causing the pod to be in a non-ready state.",
+  "root_cause": {
+    "category": "ImagePullError",
+    "component": "frontend",
+    "explanation": "ImagePullBackOff reason: failed to pull and unpack image ghcr.io/stefanprodan/podinfo:6.15.99: failed to resolve reference ghcr.io/stefanprodan/podinfo:6.15.99: ghcr.io/stefanprodan/podinfo:6.15.99: not found"
+  },
+  "confidence": "medium",
+  "evidence": [
+    {
+      "tool_call": "t2",
+      "source": "get_pod_status",
+      "fact": "Pod demo/frontend-68747558f7-4vmkr is not ready"
+    },
+    {
+      "tool_call": "t2",
+      "source": "get_pod_status",
+      "fact": "ImagePullBackOff reason: failed to pull and unpack image ghcr.io/stefanprodan/podinfo:6.15.99: failed to resolve reference ghcr.io/stefanprodan/podinfo:6.15.99: ghcr.io/stefanprodan/podinfo:6.15.99: not found"
+    },
+    {
+      "tool_call": "t3",
+      "source": "get_rollout_history",
+      "fact": "Deployment frontend has minimum availability."
+    },
+    {
+      "tool_call": "t5",
+      "source": "list_pods",
+      "fact": "Pod demo/frontend-68747558f7-4vmkr is Pending"
+    }
+  ],
+  "impact": "Pod is not ready and unable to start containers.",
+  "next_steps": [
+    {
+      "action": "Check image pull logs",
+      "command": "kubectl logs frontend-68747558f7-4vmkr",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": [
+    "Service dependencies"
+  ]
+}

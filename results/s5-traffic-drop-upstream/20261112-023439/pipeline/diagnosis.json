@@ -1,0 +1,40 @@
+{
+  "summary": "Service demo/backend is receiving almost no requests due to a readiness probe failure in the backend container.",
+  "root_cause": {
+    "category": "ProbeFailure",
+    "component": "backend",
+    "explanation": "Container logs show a warning about a readiness probe failure, indicating that the container is not responding to the probe."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A1",
+      "source": "Alert payload",
+      "fact": "Service demo/backend has received fewer than 0.2 requests per second (probes excluded) for 1 minute; its normal load is about 1 request per second."
+    },
+    {
+      "tool_call": "A2",
+      "source": "Pod and container status",
+      "fact": "Pod backend-5b97dd7dcb-f44wr is running with 10m CPU and 32Mi memory limits."
+    },
+    {
+      "tool_call": "A3",
+      "source": "Events for the pod",
+      "fact": "Container logs show a warning about a readiness probe failure."
+    },
+    {
+      "tool_call": "A8",
+      "source": "Service endpoints of the workload",
+      "fact": "Service endpoints of the workload are ready."
+    }
+  ],
+  "impact": "Service demo/backend is receiving almost no requests.",
+  "next_steps": [
+    {
+      "action": "Review the logs for the container to identify the cause of the readiness probe failure.",
+      "command": "kubectl logs backend-5b97dd7dcb-f44wr",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

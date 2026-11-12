@@ -1,0 +1,35 @@
+{
+  "summary": "Service demo/frontend is slow and has high latency due to scheduling issues.",
+  "root_cause": {
+    "category": "Scheduling",
+    "component": "demo/frontend",
+    "explanation": "Service demo/frontend-69bd4c6cb4-xjfk6 is Pending with a FailedScheduling event, indicating that the pod is not being scheduled properly."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A1",
+      "source": "alert",
+      "fact": "Service demo/frontend is slow"
+    },
+    {
+      "tool_call": "A10",
+      "source": "A10",
+      "fact": "Service demo/frontend-69bd4c6cb4-xjfk6 is Pending with a FailedScheduling event"
+    },
+    {
+      "tool_call": "A11",
+      "source": "A11",
+      "fact": "Service demo/frontend-69bd4c6cb4-xjfk6 has a 95th percentile latency of 1.96 seconds"
+    }
+  ],
+  "impact": "Service demo/frontend is slow and has high latency.",
+  "next_steps": [
+    {
+      "action": "Review the deployment configuration and ensure that the workload is properly scaled and that there are no misconfigurations.",
+      "command": null,
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

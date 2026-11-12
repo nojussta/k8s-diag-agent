@@ -1,0 +1,5 @@
+mode=pipeline provider=apfel model=apple-foundationmodel
+ImagePullError | podinfo | confidence medium
+Pod demo/frontend-68747558f7-4vmkr is not ready due to an ImagePullError.
+notification delivered to the webhook
+mode=pipeline model=apple-foundationmodel tool_calls=19 model_steps=1 rejected=0 repairs=0 duration=7.4s tokens in/out=1834/326 stop=diagnosis

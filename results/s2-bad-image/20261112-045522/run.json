@@ -1,0 +1,110 @@
+{
+  "scenario": "s2-bad-image",
+  "title": "Non-existent container image tag (ImagePullBackOff)",
+  "started": "2026-11-12T04:55:22+0200",
+  "steps": {
+    "agent-gemini": "ok",
+    "baseline": "healthy",
+    "detect": "ok",
+    "evidence": "ok",
+    "pipeline-gemini": "ok",
+    "reset": "ok"
+  },
+  "t_inject": 1794452122.330652,
+  "t_alert": 1794452265.9712763,
+  "detection_latency_s": 143.6,
+  "alert_labels": {
+    "alertname": "LabPodNotReady",
+    "lab": "kursinis",
+    "namespace": "demo",
+    "pod": "frontend-68747558f7-fmjrs",
+    "prometheus": "monitoring/kps-prometheus",
+    "severity": "warning"
+  },
+  "baseline_collection": {
+    "calls": 19,
+    "duration_s": 0.06
+  },
+  "methods": {
+    "agent-gemini": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider gemini --model gemini-3.1-flash-lite",
+      "exit_code": 0,
+      "duration_s": 44.7,
+      "diagnosed": true,
+      "judgement": {
+        "category": true,
+        "component": true,
+        "change": true,
+        "correct": true,
+        "text": "category, component and change match"
+      },
+      "metrics": {
+        "tool_calls": 8,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 44.594542875,
+        "input_tokens": 27152,
+        "output_tokens": 1097,
+        "stop_reason": "diagnosis",
+        "model": "gemini-3.1-flash-lite",
+        "model_steps": 9,
+        "mode": "agent",
+        "rate_limit_wait_s": 33.491697458
+      },
+      "notified": true
+    },
+    "pipeline-gemini": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider gemini --model gemini-3.1-flash-lite --mode pipeline --evidence {evidence}",
+      "exit_code": 0,
+      "duration_s": 2.5,
+      "diagnosed": true,
+      "judgement": {
+        "category": true,
+        "component": true,
+        "change": true,
+        "correct": true,
+        "text": "category, component and change match"
+      },
+      "metrics": {
+        "tool_calls": 19,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 2.512998375,
+        "input_tokens": 5936,
+        "output_tokens": 566,
+        "stop_reason": "diagnosis",
+        "model": "gemini-3.1-flash-lite",
+        "model_steps": 1,
+        "mode": "pipeline"
+      },
+      "notified": true
+    },
+    "rules": {
+      "exit_code": 0,
+      "duration_s": 0.1,
+      "diagnosed": true,
+      "judgement": {
+        "category": true,
+        "component": true,
+        "change": true,
+        "correct": true,
+        "text": "category, component and change match"
+      },
+      "rule": "R2",
+      "metrics": {
+        "tool_calls": 19,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 0.060514541,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "stop_reason": "diagnosis",
+        "model": "none",
+        "model_steps": 0,
+        "mode": "rules"
+      },
+      "notified": false
+    }
+  },
+  "finished": "2026-11-12T04:59:04+0200"
+}

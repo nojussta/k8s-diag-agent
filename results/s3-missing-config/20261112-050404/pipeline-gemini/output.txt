@@ -1,0 +1,5 @@
+mode=pipeline provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/frontend | confidence high
+The pod 'frontend-6df678c5fd-df5hj' is failing to start due to a missing ConfigMap 'frontend-config', which was recently added as a dependency in a configuration update.
+notification delivered to the webhook
+mode=pipeline model=gemini-3.1-flash-lite tool_calls=19 model_steps=1 rejected=0 repairs=0 duration=3.4s tokens in/out=5418/516 stop=diagnosis

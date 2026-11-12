@@ -1,0 +1,40 @@
+{
+  "summary": "Service demo/frontend is experiencing high latency due to misconfigured backend URL arguments causing frequent request cancellations.",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "demo/deployment/frontend",
+    "explanation": "A recent configuration update (revision 40) changed the --backend-url argument from port 9898 to 9899, which appears to be unreachable or misconfigured, leading to repeated backend call errors and increased latency."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "A5",
+      "source": "K8s API",
+      "fact": "Template diff shows --backend-url was updated from '...:9898/echo' to '...:9899/echo' in the latest revision."
+    },
+    {
+      "tool_call": "A4",
+      "source": "Pod logs",
+      "fact": "Application logs show persistent 'backend call failed' errors with 'context canceled' when attempting to connect to the new backend URL on port 9899."
+    },
+    {
+      "tool_call": "A11",
+      "source": "Prometheus",
+      "fact": "Service p95 latency is observed at 2.28s, significantly above the 500ms threshold."
+    }
+  ],
+  "impact": "Users of the frontend service are experiencing degraded performance with high latency and failing downstream requests.",
+  "next_steps": [
+    {
+      "action": "Roll back the frontend deployment to the previous stable revision (39) to revert the incorrect backend URL configuration.",
+      "command": "kubectl rollout undo deployment/frontend -n demo",
+      "requires_human_approval": true
+    },
+    {
+      "action": "Verify if the backend service 'backend.demo.svc.cluster.local' is actually listening on port 9899.",
+      "command": "kubectl get svc backend -n demo",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}
