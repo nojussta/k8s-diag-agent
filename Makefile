@@ -15,7 +15,7 @@ GOSRC := go.mod go.sum $(shell find cmd internal -name '*.go')
 GOARCH := $(shell go env GOARCH)
 
 .PHONY: help up cluster repos monitoring logging app receiver rules check scenario summary evidence \
-        alerts grafana prometheus alertmanager status down build test vet probe agent agent-local agent-gemini
+        alerts grafana prometheus alertmanager status down build test vet probe agent agent-local agent-gemini eval eval-all eval-gemini watch
 
 help: ## Show the targets
 	@grep -hE '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -56,14 +56,40 @@ $(LABCTL): $(GOSRC)
 	go build -o build/mcp-probe ./cmd/mcp-probe
 	go build -o build/agent ./cmd/agent
 
-agent: build ## Scenario with the agent; local apfel when installed, else Gemini: make agent S=s1-oomkilled [N=3]
-	build/labctl scenario $(S) --repeat $(or $(N),1) --agent-cmd "build/agent --alert {alert} --out {out}"
+# Every scenario run also applies the rule-based baseline (method "rules") to the fixed sequence's evidence.
+AGENT := build/agent --alert {alert} --out {out} --notify {notify}
 
-agent-local: build ## Scenario with the on-device model (apfel, free, offline): make agent-local S=s1-oomkilled [N=3]
-	build/labctl scenario $(S) --repeat $(or $(N),1) --agent-cmd "build/agent --provider apfel --alert {alert} --out {out}"
+agent: build ## Scenario with the agent loop; local apfel when installed, else Gemini: make agent S=s1-oomkilled [N=3]
+	build/labctl scenario $(S) --repeat $(or $(N),1) --method agent="$(AGENT)"
 
-agent-gemini: build ## Scenario with Gemini (needs GEMINI_API_KEY in .env; free tier is ~20 requests/day/model)
-	build/labctl scenario $(S) --repeat $(or $(N),1) --agent-cmd "build/agent --provider gemini --alert {alert} --out {out}"
+agent-local: build ## Scenario with the agent loop on the on-device model (apfel, free, offline)
+	build/labctl scenario $(S) --repeat $(or $(N),1) --method agent="$(AGENT) --provider apfel"
+
+agent-gemini: build ## Scenario with the agent loop on Gemini (needs GEMINI_API_KEY in .env; free tier is ~20 requests/day/model)
+	build/labctl scenario $(S) --repeat $(or $(N),1) --method agent="$(AGENT) --provider gemini"
+
+eval: build ## Evaluation run: rules + pipeline + agent loop on the local model, same fault: make eval S=s4-latency-bad-config N=3
+	build/labctl scenario $(S) --repeat $(or $(N),1) \
+	  --method pipeline="$(AGENT) --provider apfel --mode pipeline --evidence {evidence}" \
+	  --method agent="$(AGENT) --provider apfel"
+
+SCENARIOS := s1-oomkilled s2-bad-image s3-missing-config s4-latency-bad-config s5-traffic-drop-upstream
+
+eval-all: build ## Whole evaluation at no cost: all 5 scenarios x N runs (default 3), rules + pipeline + agent on the local model (~75 min)
+	@for s in $(SCENARIOS); do \
+	  build/labctl scenario $$s --repeat $(or $(N),3) \
+	    --method pipeline="$(AGENT) --provider apfel --mode pipeline --evidence {evidence}" \
+	    --method agent="$(AGENT) --provider apfel" || exit 1; \
+	done
+	@build/labctl summary --since $$(date +%Y%m%d)
+
+eval-gemini: build ## Same as eval with Gemini for both model methods (free tier: paced to 15 requests/min; GEMINI_MODEL picks the model)
+	GEMINI_MIN_INTERVAL=$(or $(GEMINI_MIN_INTERVAL),4.2s) build/labctl scenario $(S) --repeat $(or $(N),1) \
+	  --method pipeline-gemini="$(AGENT) --provider gemini --mode pipeline --evidence {evidence}" \
+	  --method agent-gemini="$(AGENT) --provider gemini"
+
+watch: build ## Automatic path: investigate every new alert at the receiver and post the report (NOTIFY_WEBHOOK_URL or a local stand-in)
+	build/labctl watch --method "$(AGENT) $(if $(P),--provider $(P),)"
 
 probe: build ## MCP server: list the 10 tools and run an investigation using MCP calls only (after make scenario S=... --keep)
 	build/mcp-probe -ns demo
