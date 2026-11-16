@@ -6,7 +6,24 @@ story: >
   backend receives almost no requests. The backend itself is healthy, so the
   evidence is in another workload, the frontend that calls it. A fixed sequence
   that inspects only the alerted object cannot reach it; the investigation has to
-  follow the dependency to the caller and find its latest change.
+  follow the dependency to the caller and find its latest change. The backend also
+  carries an unrelated release (a UI colour) made shortly before the fault.
+
+# An unrelated, harmless release of the alerted workload shortly before the fault. The first
+# evaluation (2026-11-12) showed the agent blaming such a change when it read the rollout
+# history of the alerted workload only, so the distraction is now part of the scenario
+# instead of an accident of the lab's history.
+prepare:
+  - >-
+    kubectl -n demo patch deployment backend --type=json -p='[
+      {"op":"replace","path":"/spec/template/spec/containers/0/args",
+       "value":["--port=9898","--port-metrics=9797","--level=info","--ui-color=#2f6f4f"]}
+    ]'
+  - >-
+    kubectl -n demo annotate deployment backend --overwrite
+    kubernetes.io/change-cause="release 2.0.1: UI colour"
+  - kubectl -n demo rollout status deployment/backend --timeout=180s
+  - sleep 60
 
 inject:
   - >-
@@ -19,9 +36,10 @@ inject:
     kubernetes.io/change-cause="release 2.1: frontend configuration update"
 
 reset:
+  - kubectl -n demo annotate deployment frontend backend kubernetes.io/change-cause- || true
   - kubectl apply -f env/manifests/demo-app.yaml
-  - kubectl -n demo annotate deployment frontend kubernetes.io/change-cause- || true
   - kubectl -n demo rollout status deployment/frontend --timeout=180s
+  - kubectl -n demo rollout status deployment/backend --timeout=180s
 
 expected_alert:
   alertname: LabTrafficDrop

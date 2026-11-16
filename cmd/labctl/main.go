@@ -11,6 +11,7 @@
 //	labctl rules <run-dir>...                     (re)apply the rule-based baseline to recorded runs
 //	labctl rerun --method NAME=CMD <run-dir>...   re-run an offline method (e.g. pipeline) on recorded evidence
 //	labctl watch --method CMD [--notify URL]      investigate every new alert at the receiver (queue + dedup)
+//	labctl storm [N]                              send N synthetic alerts at once to the in-cluster agent
 package main
 
 import (
@@ -38,14 +39,15 @@ import (
 const usage = `usage: labctl <command>
 
   check                                   verify the environment
-  scenario <id> [--repeat N] [--keep] [--method NAME=CMD]...
+  scenario <id> [--repeat N] [--keep] [--incluster] [--method NAME=CMD]...
   evidence (--latest | --alert FILE) [--out DIR]
   summary [--since STAMP] [scenario ...]
   alerts
   judge <run-dir>...
   rules <run-dir>...
   rerun --method NAME=CMD <run-dir>...
-  watch --method CMD [--notify URL] [--once]`
+  watch --method CMD [--notify URL] [--once]
+  storm [N]`
 
 func main() {
 	if len(os.Args) < 2 {
@@ -75,6 +77,8 @@ func main() {
 		err = cmdRerun(ctx, args)
 	case "watch":
 		err = cmdWatch(ctx, args)
+	case "storm":
+		err = cmdStorm(ctx, args)
 	case "-h", "--help", "help":
 		fmt.Println(usage)
 	default:
@@ -126,6 +130,7 @@ func cmdScenario(ctx context.Context, args []string) error {
 	var methods methodFlags
 	fs.Var(&methods, "method", "diagnosis method NAME=CMD (repeatable); {alert}, {out}, {evidence}, {notify} are substituted. The rule-based baseline always runs.")
 	agentCmd := fs.String("agent-cmd", "", "shorthand for --method agent=CMD")
+	inCluster := fs.Bool("incluster", false, "let the agent deployed in the cluster diagnose the alert on its own (needs make agent-on)")
 	// Allow the scenario id before or after the flags.
 	var id string
 	if len(args) > 0 && args[0] != "" && args[0][0] != '-' {
@@ -162,7 +167,7 @@ func cmdScenario(ctx context.Context, args []string) error {
 		out := filepath.Join(l.Root, "results", sc.ID, time.Now().Format("20060102-150405"))
 		rel, _ := filepath.Rel(l.Root, out)
 		logf("run %d/%d -> %s", i+1, *repeat, rel)
-		rec, err := runner.RunOnce(ctx, sc, scenario.Options{Keep: *keep, Methods: methods}, out)
+		rec, err := runner.RunOnce(ctx, sc, scenario.Options{Keep: *keep, Methods: methods, InCluster: *inCluster}, out)
 		if rec != nil && rec.DetectionLatencyS > 0 {
 			latencies = append(latencies, rec.DetectionLatencyS)
 		}
@@ -489,6 +494,109 @@ func cmdWatch(ctx context.Context, args []string) error {
 		case <-time.After(5 * time.Second):
 		}
 	}
+}
+
+// cmdStorm sends N synthetic firing alerts in one notification to the
+// in-cluster agent and reports what its queue did with them: how many were
+// investigated, how many were refused by the budget, and how long the queue
+// took to drain. The alerts name pods that do not exist, so every
+// investigation is short.
+func cmdStorm(ctx context.Context, args []string) error {
+	n := 20
+	if len(args) > 0 {
+		if _, err := fmt.Sscanf(args[0], "%d", &n); err != nil || n < 1 || n > 200 {
+			return errors.New("usage: labctl storm [N] (1-200)")
+		}
+	}
+	l, err := lab.New()
+	if err != nil {
+		return err
+	}
+	start := time.Now()
+	stamp := start.Format("20060102-150405")
+	payload := alertmsg.Payload{Version: "4", Status: "firing", Receiver: "diag-agent"}
+	for i := 0; i < n; i++ {
+		payload.Alerts = append(payload.Alerts, alertmsg.Alert{
+			Status: "firing", StartsAt: start.UTC().Format(time.RFC3339), Fingerprint: fmt.Sprintf("storm-%s-%02d", stamp, i),
+			Labels: map[string]string{"alertname": "LabPodCrashLooping", "lab": "kursinis", "severity": "warning",
+				"namespace": "demo", "pod": fmt.Sprintf("storm-%s-%02d", stamp, i), "container": "app"},
+			Annotations: map[string]string{"summary": "synthetic alert of labctl storm"},
+		})
+	}
+	if _, err := l.ProxyPostJSON(ctx, lab.Receiver, "alerts", payload); err != nil {
+		return err
+	}
+	logf("sent %d alerts in one notification; waiting for the queue to drain", n)
+	mine := func(list []scenario.Investigation) (out []scenario.Investigation) {
+		for _, it := range list {
+			if strings.HasPrefix(it.Alert.Fingerprint, "storm-"+stamp) {
+				out = append(out, it)
+			}
+		}
+		return out
+	}
+	var items []scenario.Investigation
+	deadline := start.Add(20 * time.Minute)
+	for time.Now().Before(deadline) {
+		list, err := scenario.Investigations(ctx, l)
+		if err == nil {
+			items = mine(list)
+			open := 0
+			for _, it := range items {
+				if it.Status == "queued" || it.Status == "running" {
+					open++
+				}
+			}
+			if len(items) > 0 && open == 0 {
+				break
+			}
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(5 * time.Second):
+		}
+	}
+	if len(items) == 0 {
+		return errors.New("the in-cluster agent queued nothing (run `make agent-on` first)")
+	}
+	count := map[string]int{}
+	var first, last time.Time
+	var total time.Duration
+	for _, it := range items {
+		count[it.Status]++
+		if it.Started != nil && it.Finished != nil {
+			total += it.Finished.Sub(*it.Started)
+			if first.IsZero() || it.Started.Before(first) {
+				first = *it.Started
+			}
+			if it.Finished.After(last) {
+				last = *it.Finished
+			}
+		}
+	}
+	msgs, _ := scenario.Messages(ctx, l)
+	storm := 0
+	for _, m := range msgs {
+		if strings.HasPrefix(m.Text, "Alert storm:") && m.Received >= start.UTC().Format(time.RFC3339) {
+			storm++
+		}
+	}
+	investigated := count["done"] + count["failed"]
+	res := map[string]any{"sent": n, "investigated": investigated, "done": count["done"], "failed": count["failed"],
+		"skipped": count["skipped"], "storm_messages": storm, "queue_drained_s": last.Sub(start).Seconds(),
+		"sum_investigation_s": total.Seconds(), "items": items}
+	out := filepath.Join(l.Root, "results", "storm", stamp)
+	if err := os.MkdirAll(out, 0o755); err != nil {
+		return err
+	}
+	b, _ := json.MarshalIndent(res, "", "  ")
+	if err := os.WriteFile(filepath.Join(out, "storm.json"), b, 0o644); err != nil {
+		return err
+	}
+	logf("%d sent: %d investigated one at a time (%d with a diagnosis), %d refused by the budget, %d summary message(s); queue drained %.0f s after the notification -> %s",
+		n, investigated, count["done"], count["skipped"], storm, last.Sub(start).Seconds(), out)
+	return nil
 }
 
 func firstNonEmpty(vs ...string) string {

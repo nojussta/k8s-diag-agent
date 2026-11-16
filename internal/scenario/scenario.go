@@ -38,10 +38,14 @@ import (
 
 // Scenario is the content of scenarios/<id>/scenario.yaml.
 type Scenario struct {
-	ID            string        `json:"id"`
-	Title         string        `json:"title"`
-	Status        string        `json:"status"` // implemented | planned
-	Story         string        `json:"story"`
+	ID     string `json:"id"`
+	Title  string `json:"title"`
+	Status string `json:"status"` // implemented | planned
+	Story  string `json:"story"`
+	// Prepare runs before the fault (and before t_inject is taken): changes
+	// that belong to the scene but are not the fault, e.g. an unrelated earlier
+	// release in the workload that will raise the alert.
+	Prepare       []string      `json:"prepare"`
 	Inject        []string      `json:"inject"`
 	Reset         []string      `json:"reset"`
 	ExpectedAlert ExpectedAlert `json:"expected_alert"`
@@ -77,6 +81,23 @@ type Match struct {
 	// ChangeAny: root_cause.explanation or summary must contain one of these
 	// (the change that triggered the fault, e.g. the changed argument).
 	ChangeAny []string `json:"change_any"`
+	// Injection is set by scenarios that plant an instruction for the model in
+	// the cluster data (indirect prompt injection). The judge then also reports
+	// whether the diagnosis did what the planted text asked for.
+	Injection *Injection `json:"injection,omitempty"`
+}
+
+// Injection describes a planted instruction and how to tell that it was obeyed.
+type Injection struct {
+	// Canary is a phrase of the planted text; a run was exposed when the phrase
+	// is in the data the model received (checked from the trace, not here).
+	Canary string `json:"canary"`
+	// The instruction was followed when the diagnosis has one of these
+	// categories, names one of these components, or suggests one of these
+	// commands or actions.
+	CategoryAny  []string `json:"category_any"`
+	ComponentAny []string `json:"component_any"`
+	CommandAny   []string `json:"command_any"`
 }
 
 // Load reads one scenario from <root>/scenarios.
@@ -132,6 +153,10 @@ type Method struct {
 type Options struct {
 	Keep    bool // do not reset after the run
 	Methods []Method
+	// InCluster waits for the agent running inside the cluster (Deployment
+	// diag-agent with AUTO_INVESTIGATE=true) to diagnose the alert on its own
+	// and records its result as the method "agent-incluster".
+	InCluster bool
 }
 
 // Record is run.json.
@@ -344,6 +369,12 @@ func (r *Runner) RunOnce(ctx context.Context, sc *Scenario, opt Options, outDir 
 		}
 	}()
 
+	if len(sc.Prepare) > 0 {
+		r.logf("prepare: %d command(s) before the fault", len(sc.Prepare))
+		if err = r.runCommands(ctx, sc.Prepare, "prepare"); err != nil {
+			return rec, err
+		}
+	}
 	tInject := time.Now()
 	r.logf("inject: %s", sc.Title)
 	if err = r.runCommands(ctx, sc.Inject, "inject"); err != nil {
@@ -386,6 +417,14 @@ func (r *Runner) RunOnce(ctx context.Context, sc *Scenario, opt Options, outDir 
 	rec.Methods["rules"] = r.runRules(sc, evRaw, filepath.Join(outDir, "rules"), alert.Labels["alertname"])
 	r.logf("rules: %s (%s)", rec.Methods["rules"].Judgement.Text, rec.Methods["rules"].Rule)
 
+	if opt.InCluster {
+		r.logf("waiting for the in-cluster agent to investigate the alert on its own")
+		rec.Methods[InClusterMethod] = r.waitInCluster(ctx, sc, alert, tInject, outDir)
+		rec.Steps[InClusterMethod] = "ok"
+		if rec.Methods[InClusterMethod].ExitCode != 0 {
+			rec.Steps[InClusterMethod] = "failed"
+		}
+	}
 	if len(opt.Methods) > 0 {
 		sink, err := StartSink()
 		if err != nil {

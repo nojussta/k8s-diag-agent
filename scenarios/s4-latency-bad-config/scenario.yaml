@@ -21,8 +21,10 @@ inject:
     kubernetes.io/change-cause="release 2.1: frontend configuration update"
 
 reset:
-  - kubectl apply -f env/manifests/demo-app.yaml
+  # The annotation goes first: the ReplicaSet that the baseline re-activates copies the
+  # Deployment's annotations, and a stale "release 2.1" label on a healthy revision would mislead.
   - kubectl -n demo annotate deployment frontend kubernetes.io/change-cause- || true
+  - kubectl apply -f env/manifests/demo-app.yaml
   - kubectl -n demo rollout status deployment/frontend --timeout=180s
 
 expected_alert:

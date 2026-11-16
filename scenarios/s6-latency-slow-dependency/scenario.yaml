@@ -1,0 +1,71 @@
+id: s6-latency-slow-dependency
+title: "A backend release adds a delay to every request (latency alert on the frontend, cause in the called workload)"
+status: implemented
+story: >
+  Release 2.2 of the backend turns on a request delay of 600-900 ms. Nothing crashes,
+  every pod stays Running and Ready, and the frontend was not changed by this release.
+  The alert is raised for the frontend, whose requests are slow because each of them
+  calls the backend. S5 moves from the alerted workload to its caller; this scenario
+  moves the other way, to the workload it calls. The frontend also carries an unrelated
+  release (a UI colour) made shortly before the fault. A fixed sequence that inspects
+  only the alerted frontend sees a slow service, clean logs and a harmless change.
+
+prepare:
+  - >-
+    kubectl -n demo patch deployment frontend --type=json -p='[
+      {"op":"replace","path":"/spec/template/spec/containers/0/args",
+       "value":["--port=9898","--port-metrics=9797","--level=info",
+                "--backend-url=http://backend.demo.svc.cluster.local:9898/echo","--ui-color=#2f6f4f"]}
+    ]'
+  - >-
+    kubectl -n demo annotate deployment frontend --overwrite
+    kubernetes.io/change-cause="release 2.1.1: UI colour"
+  - kubectl -n demo rollout status deployment/frontend --timeout=180s
+  - sleep 60
+
+inject:
+  - >-
+    kubectl -n demo patch deployment backend --type=json -p='[
+      {"op":"replace","path":"/spec/template/spec/containers/0/args",
+       "value":["--port=9898","--port-metrics=9797","--level=info",
+                "--random-delay","--random-delay-unit=ms","--random-delay-min=600","--random-delay-max=900"]}
+    ]'
+  - >-
+    kubectl -n demo annotate deployment backend --overwrite
+    kubernetes.io/change-cause="release 2.2: request smoothing"
+
+reset:
+  - kubectl -n demo annotate deployment frontend backend kubernetes.io/change-cause- || true
+  - kubectl apply -f env/manifests/demo-app.yaml
+  - kubectl -n demo rollout status deployment/backend --timeout=180s
+  - kubectl -n demo rollout status deployment/frontend --timeout=180s
+
+expected_alert:
+  alertname: LabHighLatency
+  labels:
+    namespace: demo
+    service: frontend
+  timeout_seconds: 480
+
+ground_truth:
+  category: ConfigurationError
+  component: demo/deployment/backend (container backend)
+  root_cause: >
+    The latest backend revision (release 2.2) added --random-delay with a 600-900 ms
+    range, so every backend request, including the /echo call made by the frontend,
+    takes that long. The frontend's 95th percentile latency rises above 500 ms although
+    the frontend itself did not change in a relevant way. All pods stay Running and
+    Ready without restarts.
+  key_evidence:
+    - "rollout history of backend: newest revision adds --random-delay, --random-delay-min=600, --random-delay-max=900"
+    - "metrics: backend p95 latency is as high as the frontend's"
+    - "frontend logs show no errors; frontend rollout history shows only a UI colour change"
+  match:
+    # A misconfigured release of the callee; "dependency failure" (seen from the frontend) is accepted.
+    category_any: ["ConfigurationError", "DependencyFailure"]
+    component_any: ["backend"]
+    component_not: ["deployment/frontend", "/frontend-"]
+    change_any: ["random-delay", "random delay"]
+  acceptable_actions:
+    - "roll back the backend (kubectl rollout undo deployment/backend -n demo)"
+    - "remove --random-delay from the backend arguments"
