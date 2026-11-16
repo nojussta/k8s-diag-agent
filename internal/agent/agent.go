@@ -93,6 +93,20 @@ type Metrics struct {
 	// RateLimitWaitS is time spent waiting on the provider's per-minute rate
 	// limit (included in DurationS; subtract it to compare methods fairly).
 	RateLimitWaitS float64 `json:"rate_limit_wait_s,omitempty"`
+	// Prompt identifies the system prompt (PromptID) and Generation the
+	// sampling parameters sent to the model, for reproducibility.
+	Prompt     string         `json:"prompt,omitempty"`
+	Generation map[string]any `json:"generation,omitempty"`
+	// TruncatedResults counts tool results cut by the tool layer's size cap.
+	TruncatedResults int `json:"truncated_results"`
+	// Grounding is the content check of the accepted diagnosis (see grounding.go).
+	Grounding *Grounding `json:"grounding,omitempty"`
+}
+
+// Describer is an optional Model capability: the prompt and the generation
+// parameters the client sends, recorded in the metrics of every run.
+type Describer interface {
+	Describe() (prompt string, generation map[string]any)
 }
 
 // Waiter is an optional Model capability: how long it waited on rate limits.
@@ -138,6 +152,9 @@ func (a *Agent) Investigate(ctx context.Context, alert string) (Report, error) {
 
 	start := time.Now()
 	m := Metrics{Model: a.ModelName, Mode: "agent"}
+	if d, ok := a.Model.(Describer); ok {
+		m.Prompt, m.Generation = d.Describe()
+	}
 	finish := func(reason string, d *Diagnosis, err error) (Report, error) {
 		m.StopReason = reason
 		m.DurationS = time.Since(start).Seconds()
@@ -151,6 +168,7 @@ func (a *Agent) Investigate(ctx context.Context, alert string) (Report, error) {
 	history := []Turn{{Role: "user", Content: "Alert (JSON):\n" + alert}}
 	seen := map[[32]byte]string{}
 	executed := map[string]bool{}
+	results := map[string]string{} // call id -> the result the model saw
 	n, strikes := 0, 0
 	fin, canFinalize := a.Model.(Finalizer)
 	forceFinal := false
@@ -184,6 +202,8 @@ func (a *Agent) Investigate(ctx context.Context, alert string) (Report, error) {
 			}
 			d, verr := ParseDiagnosis([]byte(step.Text), executed)
 			if verr == nil {
+				g := CheckGrounding(d, results, alert)
+				m.Grounding = &g
 				a.trace("final", d)
 				return finish("diagnosis", d, nil)
 			}
@@ -228,9 +248,16 @@ func (a *Agent) Investigate(ctx context.Context, alert string) (Report, error) {
 						res = fmt.Sprintf(`{"ok":false,"error":%q}`, err.Error())
 					}
 					out = res
+					results[id] = res
+					if truncatedResult(res) {
+						m.TruncatedResults++
+					}
 				}
 			}
-			a.trace("tool_call", map[string]any{"id": id, "name": c.Name, "args": c.Args, "result_bytes": len(out)})
+			// The result itself is kept in the trace, so a run can be audited and
+			// re-checked offline (what exactly did the model see?).
+			a.trace("tool_call", map[string]any{"id": id, "name": c.Name, "args": c.Args, "result_bytes": len(out),
+				"truncated": truncatedResult(out), "result": out})
 			history = append(history, Turn{Role: "tool", CallID: c.ID, Name: c.Name, Content: untrusted(id, out)})
 		}
 		if strikes >= maxStrikes {

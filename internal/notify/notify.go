@@ -42,6 +42,10 @@ func Text(alertname string, d *agent.Diagnosis, m agent.Metrics) string {
 			b.WriteString("\n")
 		}
 	}
+	if g := m.Grounding; g != nil && len(g.Ungrounded) > 0 {
+		// Numbers the model quoted that are not in the tool result it cites.
+		fmt.Fprintf(&b, "\nNot verified automatically (number not found in the cited tool result): %s\n", strings.Join(g.Ungrounded, "; "))
+	}
 	if len(d.Unknowns) > 0 {
 		fmt.Fprintf(&b, "\nUnknown: %s\n", strings.Join(d.Unknowns, "; "))
 	}

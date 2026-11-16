@@ -51,6 +51,9 @@ func (p *Pipeline) Diagnose(ctx context.Context, alert string, evidenceJSON []by
 		return Report{}, fmt.Errorf("evidence.json: %w", err)
 	}
 	m := Metrics{Model: p.ModelName, ToolCalls: ev.TotalCalls, Mode: "pipeline"}
+	if d, ok := p.Model.(Describer); ok {
+		m.Prompt, m.Generation = d.Describe()
+	}
 	trace := func(e string, v any) {
 		if p.Trace != nil {
 			p.Trace(e, v)
@@ -68,6 +71,7 @@ func (p *Pipeline) Diagnose(ctx context.Context, alert string, evidenceJSON []by
 	}
 
 	executed := map[string]bool{}
+	results := map[string]string{}
 	history := []Turn{{Role: "user", Content: "Alert (JSON):\n" + alert}}
 	var all strings.Builder
 	all.WriteString("Alert (JSON):\n" + alert + "\n\nThe fixed read-only action sequence has already collected this data:")
@@ -82,6 +86,7 @@ func (p *Pipeline) Diagnose(ctx context.Context, alert string, evidenceJSON []by
 			out = out[:p.MaxActionBytes] + "...[truncated]"
 		}
 		executed[a.ID] = true
+		results[a.ID] = out
 		ids = append(ids, a.ID)
 		block := untrusted(a.ID, fmt.Sprintf("%s (%s):\n%s", a.Name, a.Source, out))
 		if p.ToolTurns {
@@ -120,6 +125,8 @@ func (p *Pipeline) Diagnose(ctx context.Context, alert string, evidenceJSON []by
 		}
 		d, verr := ParseDiagnosis([]byte(step.Text), executed)
 		if verr == nil {
+			g := CheckGrounding(d, results, alert)
+			m.Grounding = &g
 			trace("final", d)
 			return finish("diagnosis", d, nil)
 		}
