@@ -1,0 +1,13 @@
+Incident triage: LabTrafficDrop
+Probable cause: ConfigurationError in demo/deployment/backend (container backend) (confidence high)
+The backend pods are running and healthy on port 9898 (confirmed by logs t13/t15), but the frontend service (and loadgen) is attempting to reach it on port 9899, leading to connection failures (confirmed by frontend logs t6 and loadgen logs t5).
+
+Evidence:
+- [t13 K8s API: pods/log] The backend container reports it is 'Starting HTTP Server.' on 'addr': ':9898'.
+- [t6 K8s API: pods/log] The frontend container logs show 'backend call failed' with error 'Post "http://backend.demo.svc.cluster.local:9899/echo": context canceled'.
+- [t5 K8s API: pods/log] The loadgen container is reporting 'wget: download timed out'.
+
+Suggested next steps (not executed; a person decides):
+- Update the frontend application configuration or the service definition to match the correct backend port (9898).: kubectl edit deployment frontend -n demo
+
+Method agent, model gemini-3.1-flash-lite, 14 read-only calls, 89.3 s.

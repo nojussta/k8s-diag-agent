@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/frontend | confidence high
+The backend service is healthy, but the frontend service is failing to reach it because the frontend is configured with the incorrect port for the backend.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=9 model_steps=12 rejected=2 repairs=0 duration=62.8s tokens in/out=53025/847 stop=diagnosis

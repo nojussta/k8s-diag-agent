@@ -1,0 +1,30 @@
+{
+  "summary": "The backend service is experiencing a traffic drop because the frontend service was updated to point to an incorrect port on the backend.",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "demo/deployment/frontend (container frontend)",
+    "explanation": "A rollout of the frontend service changed the backend URL argument from port 9898 to 9899, which is unreachable, causing frontend requests to fail."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "t6",
+      "source": "K8s API: replicasets, deployments",
+      "fact": "The frontend deployment template diff shows 'current' args '--backend-url=http://backend.demo.svc.cluster.local:9899/echo' vs 'previous' args ending in ':9898/echo'."
+    },
+    {
+      "tool_call": "t7",
+      "source": "K8s API: pods/log",
+      "fact": "Frontend logs show constant errors: 'backend call failed' to 'http://backend.demo.svc.cluster.local:9899/echo' with 'context canceled'."
+    }
+  ],
+  "impact": "The backend service is not receiving traffic from the frontend, and the frontend is failing to communicate with the backend.",
+  "next_steps": [
+    {
+      "action": "Revert the frontend deployment to the previous revision to restore the correct backend port configuration.",
+      "command": "kubectl rollout undo deployment/frontend -n demo",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

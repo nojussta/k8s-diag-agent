@@ -1,0 +1,35 @@
+{
+  "summary": "The `backend` service is receiving minimal traffic because the `frontend` application was updated to send requests to an incorrect port on the backend service.",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "demo/deployment/frontend (container frontend)",
+    "explanation": "A recent deployment updated the `--backend-url` argument in the frontend container to use port `9899`, while the backend service is listening on port `9898`."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "t7",
+      "source": "K8s API: replicasets, deployments",
+      "fact": "The latest revision of the `frontend` deployment changed the `--backend-url` from `http://backend.demo.svc.cluster.local:9898/echo` to `http://backend.demo.svc.cluster.local:9899/echo`."
+    },
+    {
+      "tool_call": "t8",
+      "source": "K8s API: pods/log",
+      "fact": "The `frontend` pod logs show recurring errors: `Post \"http://backend.demo.svc.cluster.local:9899/echo\": context canceled`."
+    },
+    {
+      "tool_call": "t4",
+      "source": "K8s API: pods/log",
+      "fact": "The `backend` service is explicitly started and listening on port `9898`."
+    }
+  ],
+  "impact": "The `frontend` application is failing to communicate with the `backend` service, resulting in a significant drop in traffic for the backend and functional failure in the frontend's echo feature.",
+  "next_steps": [
+    {
+      "action": "Roll back the frontend deployment to the previous revision to restore the correct backend port configuration.",
+      "command": "kubectl rollout undo deployment/frontend -n demo",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

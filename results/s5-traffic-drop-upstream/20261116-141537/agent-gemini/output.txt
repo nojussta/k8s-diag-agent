@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/frontend (container frontend) | confidence high
+The backend service traffic drop is caused by a misconfiguration in the frontend deployment, which was updated to call the backend on port 9899, while the backend application only listens on port 9898.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=14 model_steps=15 rejected=0 repairs=0 duration=110.2s tokens in/out=71884/1005 stop=diagnosis

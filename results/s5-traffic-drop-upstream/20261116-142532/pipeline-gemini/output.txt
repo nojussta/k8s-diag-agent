@@ -1,0 +1,5 @@
+mode=pipeline provider=gemini model=gemini-3.1-flash-lite
+ProbeFailure | demo/deployment/backend | confidence high
+The demo/backend service is receiving minimal traffic, likely caused by a recent deployment change that introduced a configuration issue, leading to failed readiness probes on new pods.
+notification delivered to the webhook
+mode=pipeline model=gemini-3.1-flash-lite tool_calls=22 model_steps=1 rejected=0 repairs=0 duration=2.9s tokens in/out=4662/491 stop=diagnosis

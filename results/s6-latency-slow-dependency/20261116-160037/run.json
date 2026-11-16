@@ -1,0 +1,204 @@
+{
+  "scenario": "s6-latency-slow-dependency",
+  "title": "A backend release adds a delay to every request (latency alert on the frontend, cause in the called workload)",
+  "started": "2026-11-16T16:00:37+0200",
+  "steps": {
+    "agent-gemini": "ok",
+    "agent-gemini-v1": "ok",
+    "baseline": "healthy",
+    "detect": "ok",
+    "evidence": "ok",
+    "pipeline-gemini": "ok",
+    "reset": "ok"
+  },
+  "t_inject": 1794837698.579178,
+  "t_alert": 1794837806.066578,
+  "detection_latency_s": 107.5,
+  "alert_labels": {
+    "alertname": "LabHighLatency",
+    "lab": "kursinis",
+    "namespace": "demo",
+    "prometheus": "monitoring/kps-prometheus",
+    "service": "frontend",
+    "severity": "warning"
+  },
+  "baseline_collection": {
+    "calls": 22,
+    "duration_s": 0.04
+  },
+  "methods": {
+    "agent-gemini": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider gemini",
+      "exit_code": 0,
+      "duration_s": 150.4,
+      "diagnosed": true,
+      "judgement": {
+        "category": true,
+        "component": true,
+        "change": true,
+        "correct": true,
+        "text": "category, component and change match"
+      },
+      "metrics": {
+        "tool_calls": 13,
+        "rejected_calls": 2,
+        "repairs": 0,
+        "duration_s": 150.336899417,
+        "input_tokens": 91601,
+        "output_tokens": 1037,
+        "stop_reason": "diagnosis",
+        "model": "gemini-3.1-flash-lite",
+        "model_steps": 16,
+        "mode": "agent",
+        "rate_limit_wait_s": 62.791129791,
+        "prompt": "d74711dd",
+        "generation": {
+          "api": "interactions",
+          "response_format": "json_schema",
+          "seed": "not set",
+          "store": false,
+          "temperature": 1,
+          "thinking_level": "provider default",
+          "top_p": "provider default"
+        },
+        "truncated_results": 0,
+        "grounding": {
+          "facts": 2,
+          "facts_grounded": 1,
+          "numbers": 13,
+          "numbers_grounded": 11,
+          "ungrounded": [
+            "evidence[1] (t13): 32",
+            "evidence[1] (t13): 750"
+          ]
+        }
+      },
+      "notified": true
+    },
+    "agent-gemini-v1": {
+      "cmd": "AGENT_PROMPT=v1 build/agent --alert {alert} --out {out} --notify {notify} --provider gemini",
+      "exit_code": 0,
+      "duration_s": 87.6,
+      "diagnosed": true,
+      "judgement": {
+        "category": true,
+        "component": true,
+        "change": true,
+        "correct": true,
+        "text": "category, component and change match"
+      },
+      "metrics": {
+        "tool_calls": 14,
+        "rejected_calls": 2,
+        "repairs": 0,
+        "duration_s": 87.579536667,
+        "input_tokens": 85466,
+        "output_tokens": 1009,
+        "stop_reason": "diagnosis",
+        "model": "gemini-3.1-flash-lite",
+        "model_steps": 17,
+        "mode": "agent",
+        "rate_limit_wait_s": 67.000803833,
+        "prompt": "02102fb4",
+        "generation": {
+          "api": "interactions",
+          "response_format": "json_schema",
+          "seed": "not set",
+          "store": false,
+          "temperature": 1,
+          "thinking_level": "provider default",
+          "top_p": "provider default"
+        },
+        "truncated_results": 0,
+        "grounding": {
+          "facts": 2,
+          "facts_grounded": 1,
+          "numbers": 7,
+          "numbers_grounded": 5,
+          "ungrounded": [
+            "evidence[1] (t13): 95",
+            "evidence[1] (t13): 975"
+          ]
+        }
+      },
+      "notified": true
+    },
+    "pipeline-gemini": {
+      "cmd": "build/agent --alert {alert} --out {out} --notify {notify} --provider gemini --mode pipeline --evidence {evidence}",
+      "exit_code": 0,
+      "duration_s": 2.8,
+      "diagnosed": true,
+      "judgement": {
+        "category": false,
+        "component": false,
+        "change": false,
+        "correct": false,
+        "text": "wrong: category, component, change"
+      },
+      "metrics": {
+        "tool_calls": 22,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 2.753983459,
+        "input_tokens": 4737,
+        "output_tokens": 572,
+        "stop_reason": "diagnosis",
+        "model": "gemini-3.1-flash-lite",
+        "model_steps": 1,
+        "mode": "pipeline",
+        "prompt": "3bac20e9",
+        "generation": {
+          "api": "interactions",
+          "response_format": "json_schema",
+          "seed": "not set",
+          "store": false,
+          "temperature": 1,
+          "thinking_level": "provider default",
+          "top_p": "provider default"
+        },
+        "truncated_results": 0,
+        "grounding": {
+          "facts": 3,
+          "facts_grounded": 1,
+          "numbers": 6,
+          "numbers_grounded": 2,
+          "ungrounded": [
+            "evidence[1] (A11): 899",
+            "evidence[1] (A11): 500",
+            "evidence[2] (A7): 128",
+            "explanation: 900"
+          ]
+        }
+      },
+      "notified": true
+    },
+    "rules": {
+      "exit_code": 0,
+      "duration_s": 0,
+      "diagnosed": true,
+      "judgement": {
+        "category": false,
+        "component": false,
+        "change": false,
+        "correct": false,
+        "text": "wrong: category, component, change"
+      },
+      "rule": "none",
+      "metrics": {
+        "tool_calls": 22,
+        "rejected_calls": 0,
+        "repairs": 0,
+        "duration_s": 0.0403145,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "stop_reason": "diagnosis",
+        "model": "none",
+        "model_steps": 0,
+        "mode": "rules",
+        "truncated_results": 0
+      },
+      "notified": false
+    }
+  },
+  "finished": "2026-11-16T16:09:20+0200"
+}

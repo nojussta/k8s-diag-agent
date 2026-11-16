@@ -1,0 +1,35 @@
+{
+  "summary": "The backend service is healthy and listening on port 9898, but the frontend service was updated to call the backend on port 9899, which is incorrect.",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "demo/deployment/frontend",
+    "explanation": "A recent rollout of the frontend deployment changed the --backend-url argument to use port 9899, while the backend service is configured to listen on port 9898."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "t6",
+      "source": "K8s API: replicasets, deployments",
+      "fact": "The latest revision of the frontend deployment (revision 6) updated the --backend-url argument from '...:9898/echo' to '...:9899/echo'."
+    },
+    {
+      "tool_call": "t9",
+      "source": "K8s API: pods/log",
+      "fact": "The backend pod logs show it is listening on port 9898."
+    },
+    {
+      "tool_call": "t7",
+      "source": "K8s API: pods/log",
+      "fact": "The frontend pod logs show repeated connection failures when trying to reach the backend at port 9899."
+    }
+  ],
+  "impact": "The backend service is not receiving traffic from the frontend because the frontend is calling the wrong port.",
+  "next_steps": [
+    {
+      "action": "Revert the frontend deployment to the previous stable version that uses the correct backend port (9898).",
+      "command": "kubectl rollout undo deployment/frontend -n demo",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

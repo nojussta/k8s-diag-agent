@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/frontend (container frontend) | confidence high
+The `backend` service is receiving minimal traffic because the `frontend` application was updated to send requests to an incorrect port on the backend service.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=15 model_steps=18 rejected=1 repairs=0 duration=96.8s tokens in/out=103742/1057 stop=diagnosis

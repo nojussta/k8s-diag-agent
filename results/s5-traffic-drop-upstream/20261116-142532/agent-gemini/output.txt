@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/frontend (container frontend) | confidence high
+The 'frontend' service is failing to call the 'backend' service due to an incorrect URL configuration.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=15 model_steps=18 rejected=2 repairs=0 duration=139.2s tokens in/out=108402/1100 stop=diagnosis

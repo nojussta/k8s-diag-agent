@@ -1,0 +1,35 @@
+{
+  "summary": "Service demo/frontend is experiencing high latency due to a misconfiguration in the backend URL path passed to the frontend, causing it to attempt connection to a non-existent endpoint on the backend.",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "demo/deployment/frontend (container frontend)",
+    "explanation": "A recent rollout (revision 32, 2026-11-16T14:09:21Z) updated the frontend configuration, changing the `--backend-url` argument from port 9898 to 9899, which is not being listened on by the backend service."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "t3",
+      "source": "K8s API: replicasets, deployments",
+      "fact": "The latest revision 32 of the frontend deployment, rolled out shortly before the alert, changed the --backend-url argument to include port 9899."
+    },
+    {
+      "tool_call": "t6",
+      "source": "K8s API: pods/log",
+      "fact": "The frontend container logs show repeated errors: 'Post http://backend.demo.svc.cluster.local:9899/echo: context canceled'."
+    },
+    {
+      "tool_call": "t13",
+      "source": "Prometheus",
+      "fact": "The 95th percentile latency of the frontend service is 2.3 seconds."
+    }
+  ],
+  "impact": "Service demo/frontend users are experiencing high latency and potential request failures due to broken communication with the backend service.",
+  "next_steps": [
+    {
+      "action": "Roll back the frontend deployment to the previous revision (31).",
+      "command": "kubectl rollout undo deployment/frontend -n demo",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

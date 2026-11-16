@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-16T13:17:31Z",
+    "text": "Incident triage: LabHighLatency\nProbable cause: ProbeFailure in demo/deployment/frontend (confidence medium)\nThe pod experienced readiness probe failures ('connection refused') immediately upon startup, indicating the application was not ready when the kubelet first checked, though it stabilized later.\n\nEvidence:\n- [A3 K8s API: events] Readiness probe failed during initial startup: 'Get http://10.244.1.55:9898/readyz: dial tcp 10.244.1.55:9898: connect: connection refused'\n- [A11 Prometheus] 95th percentile latency is 0.903 seconds, exceeding the 0.5s threshold.\n\nSuggested next steps (not executed; a person decides):\n- Check the readiness probe configuration in the deployment template to ensure sufficient initialDelaySeconds is configured.: kubectl get deployment frontend -n demo -o yaml\n- Monitor the latency trends to see if this is persistent or just a transient post-deployment effect.\n\nUnknown: Specific path configuration of the readiness probe.; Internal application performance metrics or potential downstream dependencies causing latency.\n\nMethod pipeline, model gemini-3.1-flash-lite, 22 read-only calls, 4.7 s.\n"
+  }
+]

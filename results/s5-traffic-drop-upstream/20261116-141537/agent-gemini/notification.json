@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-16T12:21:48Z",
+    "text": "Incident triage: LabTrafficDrop\nProbable cause: ConfigurationError in demo/deployment/frontend (container frontend) (confidence high)\nThe latest revision of the frontend deployment (revision 8, rolled out at 2026-11-16T12:16:40Z) changed the --backend-url argument to point to port 9899 instead of 9898.\n\nEvidence:\n- [t5 K8s API: replicasets, deployments] The latest frontend revision 8 changed the --backend-url argument from 'http://backend.demo.svc.cluster.local:9898/echo' to 'http://backend.demo.svc.cluster.local:9899/echo'.\n- [t6 K8s API: pods/log] The frontend container logs show repeated errors: 'Post http://backend.demo.svc.cluster.local:9899/echo: context canceled'.\n- [t13 K8s API: pods/log] The backend container is confirmed to be listening on port 9898: 'Starting HTTP Server.', 'addr': ':9898'.\n\nSuggested next steps (not executed; a person decides):\n- Revert the frontend deployment to the previous revision to restore the correct backend URL port.: kubectl rollout undo deployment/frontend -n demo\n\nMethod agent, model gemini-3.1-flash-lite, 14 read-only calls, 110.2 s.\n"
+  }
+]

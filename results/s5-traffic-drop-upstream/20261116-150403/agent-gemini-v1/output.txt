@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/backend | confidence medium
+The 'backend' service is experiencing a traffic drop because the load generator is timing out, likely due to a regression or configuration issue introduced in the recent rollout.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=15 model_steps=17 rejected=0 repairs=0 duration=159.2s tokens in/out=76838/1133 stop=diagnosis

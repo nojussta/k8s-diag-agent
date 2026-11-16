@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/backend | confidence high
+The 'frontend' service is experiencing high latency due to a recent configuration change in the 'backend' service which introduced a forced artificial delay.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=15 model_steps=18 rejected=1 repairs=0 duration=160.1s tokens in/out=104733/1138 stop=diagnosis

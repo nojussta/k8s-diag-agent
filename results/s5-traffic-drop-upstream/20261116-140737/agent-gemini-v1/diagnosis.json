@@ -1,0 +1,35 @@
+{
+  "summary": "The 'backend' service is receiving almost no traffic because the 'frontend' is failing to communicate with it, likely due to a port mismatch following a recent deployment update.",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "demo/deployment/backend",
+    "explanation": "The 'backend' container is configured via arguments to listen on port 9898 (t6), but the frontend is attempting to connect to it via port 9899 (t4), which resulted in connection failures after the recent revision deployment (t5)."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "t4",
+      "source": "K8s API: pods/log",
+      "fact": "Frontend logs show 'backend call failed' with error 'Post http://backend.demo.svc.cluster.local:9899/echo: context canceled', indicating it expects the backend on port 9899."
+    },
+    {
+      "tool_call": "t6",
+      "source": "K8s API: pods/log",
+      "fact": "Backend logs confirm the service is starting on port 9898: 'Starting HTTP Server. addr: :9898'."
+    },
+    {
+      "tool_call": "t5",
+      "source": "K8s API: replicasets, deployments",
+      "fact": "The latest deployment (revision 8) changed container arguments, though the port arguments were explicitly set to 9898."
+    }
+  ],
+  "impact": "The 'backend' service is unreachable by its clients, causing failed requests in the 'frontend' service.",
+  "next_steps": [
+    {
+      "action": "Update the 'backend' service definition or deployment configuration to ensure the service port matches the application's listen port (9898).",
+      "command": "kubectl patch deployment backend -n demo -p '{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"backend\",\"args\":[\"--port=9899\",\"--port-metrics=9797\",\"--level=info\",\"--ui-color=#2f6f4f\"]}]}}}}'",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

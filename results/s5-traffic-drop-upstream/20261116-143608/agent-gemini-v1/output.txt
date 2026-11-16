@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+Unknown | demo/deployment/backend | confidence low
+The backend service is currently operational despite the alert, as evidenced by recent metrics confirming traffic. The error logs in the frontend service indicate 'context canceled' errors, suggesting transient network connectivity or timeout issues, but the backend itself shows no signs of crashing or restart loops.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=15 model_steps=18 rejected=1 repairs=0 duration=102.1s tokens in/out=110605/1113 stop=diagnosis

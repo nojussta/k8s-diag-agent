@@ -1,0 +1,33 @@
+{
+  "tool_calls": 15,
+  "rejected_calls": 1,
+  "repairs": 0,
+  "duration_s": 113.670525625,
+  "input_tokens": 87744,
+  "output_tokens": 1041,
+  "stop_reason": "diagnosis",
+  "model": "gemini-3.1-flash-lite",
+  "model_steps": 17,
+  "mode": "agent",
+  "rate_limit_wait_s": 66.955041043,
+  "prompt": "d74711dd",
+  "generation": {
+    "api": "interactions",
+    "response_format": "json_schema",
+    "seed": "not set",
+    "store": false,
+    "temperature": 1,
+    "thinking_level": "provider default",
+    "top_p": "provider default"
+  },
+  "truncated_results": 1,
+  "grounding": {
+    "facts": 3,
+    "facts_grounded": 2,
+    "numbers": 12,
+    "numbers_grounded": 11,
+    "ungrounded": [
+      "evidence[2] (t13): 95"
+    ]
+  }
+}

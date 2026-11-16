@@ -1,0 +1,5 @@
+mode=pipeline provider=gemini model=gemini-3.1-flash-lite
+ApplicationCrash | demo/Deployment/frontend | confidence medium
+The demo/frontend service is experiencing high latency (p95 > 500ms) because the application appears to be struggling with request processing, potentially related to the recent addition of a UI color configuration flag.
+notification delivered to the webhook
+mode=pipeline model=gemini-3.1-flash-lite tool_calls=22 model_steps=1 rejected=0 repairs=0 duration=15.1s tokens in/out=4745/553 stop=diagnosis

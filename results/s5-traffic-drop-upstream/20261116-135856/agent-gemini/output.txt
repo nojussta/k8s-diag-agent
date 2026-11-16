@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/frontend (container frontend) | confidence high
+The backend service is receiving no traffic because the frontend is configured to call the backend on port 9899, while the backend is listening on port 9898.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=14 model_steps=16 rejected=1 repairs=0 duration=86.4s tokens in/out=80220/1110 stop=diagnosis

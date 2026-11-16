@@ -1,0 +1,5 @@
+mode=pipeline provider=gemini model=gemini-3.1-flash-lite
+ProbeFailure | demo/deployment/backend | confidence medium
+The backend service is experiencing a traffic drop due to intermittent readiness probe failures on the pods, even though the application server is reported as running and listening on the expected port.
+notification delivered to the webhook
+mode=pipeline model=gemini-3.1-flash-lite tool_calls=22 model_steps=1 rejected=0 repairs=0 duration=51.9s tokens in/out=4660/503 stop=diagnosis

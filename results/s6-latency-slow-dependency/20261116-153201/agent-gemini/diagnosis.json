@@ -1,0 +1,30 @@
+{
+  "summary": "Service demo/frontend is experiencing high latency due to downstream backend services introducing random delays.",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "demo/deployment/backend (container backend)",
+    "explanation": "A recent configuration update (revision 26) introduced '--random-delay-min=600' and '--random-delay-max=900' arguments, causing significant latency in backend requests."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "t14",
+      "source": "Prometheus",
+      "fact": "Average request latency for backend pods is approximately 740ms-760ms, which exceeds the 500ms threshold."
+    },
+    {
+      "tool_call": "t15",
+      "source": "K8s API: replicasets, deployments",
+      "fact": "The backend deployment was updated in revision 26 to include '--random-delay-min=600' and '--random-delay-max=900' arguments."
+    }
+  ],
+  "impact": "The high latency in the backend service directly impacts the 95th percentile latency of the frontend service, triggering the alert.",
+  "next_steps": [
+    {
+      "action": "Roll back the backend deployment to the previous revision to remove the artificial latency.",
+      "command": "kubectl rollout undo deployment/backend -n demo",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

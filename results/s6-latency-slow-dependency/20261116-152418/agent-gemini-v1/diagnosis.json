@@ -1,0 +1,30 @@
+{
+  "summary": "Service frontend high latency is caused by a performance bottleneck in the dependency service backend.",
+  "root_cause": {
+    "category": "DependencyFailure",
+    "component": "demo/deployment/backend",
+    "explanation": "The backend service's '/echo' endpoint is experiencing high latency (p95 \u003e 900ms), causing cascading latency increases in the frontend service."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "t10",
+      "source": "Prometheus",
+      "fact": "The frontend service's POST /echo requests have an average duration of ~550ms, whereas other endpoints are very fast."
+    },
+    {
+      "tool_call": "t14",
+      "source": "Prometheus",
+      "fact": "The p95 latency for the backend service's /echo endpoint is measured at 970ms."
+    }
+  ],
+  "impact": "Users of the frontend service are experiencing significantly delayed response times for requests involving the /echo path.",
+  "next_steps": [
+    {
+      "action": "Investigate the backend service code or resource constraints, as it is failing to process /echo requests within a reasonable timeframe.",
+      "command": "kubectl logs -l app=podinfo -n demo",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

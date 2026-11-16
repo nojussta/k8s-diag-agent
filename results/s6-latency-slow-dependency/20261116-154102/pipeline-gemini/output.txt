@@ -1,0 +1,5 @@
+mode=pipeline provider=gemini model=gemini-3.1-flash-lite
+Unknown | demo/deployment/frontend | confidence low
+The demo/frontend service is experiencing high p95 latency (~0.9s), which exceeds the 0.5s threshold. The pod is healthy, but there is no evidence of underlying resource contention or application crashes.
+notification delivered to the webhook
+mode=pipeline model=gemini-3.1-flash-lite tool_calls=22 model_steps=1 rejected=0 repairs=0 duration=2.3s tokens in/out=4737/484 stop=diagnosis

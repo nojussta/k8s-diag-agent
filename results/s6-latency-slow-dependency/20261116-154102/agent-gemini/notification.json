@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-16T13:45:31Z",
+    "text": "Incident triage: LabHighLatency\nProbable cause: ConfigurationError in demo/deployment/backend (confidence high)\nA recent deployment (revision 28) added command-line arguments '--random-delay', '--random-delay-min=600', and '--random-delay-max=900' to the backend container, directly increasing request response times beyond the 500ms threshold.\n\nEvidence:\n- [t14 Prometheus] The 95th percentile latency for the backend service is 975ms, which explains the high latency in the frontend.\n- [t7 K8s API: replicasets, deployments] The latest revision (28) of the backend deployment introduced '--random-delay' arguments, which were not present in previous versions.\n\nSuggested next steps (not executed; a person decides):\n- Revert the backend deployment to the previous revision (27) to remove the artificial delays.: kubectl rollout undo deployment/backend -n demo\n\nNot verified automatically (number not found in the cited tool result): evidence[0] (t14): 95\n\nMethod agent, model gemini-3.1-flash-lite, 15 read-only calls, 106.1 s.\n"
+  }
+]

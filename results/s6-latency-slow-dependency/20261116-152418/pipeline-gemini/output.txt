@@ -1,0 +1,5 @@
+mode=pipeline provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/frontend | confidence medium
+The demo/frontend service is experiencing high p95 latency (exceeding 900ms), likely due to a recent configuration change that introduced an unnecessary flag.
+notification delivered to the webhook
+mode=pipeline model=gemini-3.1-flash-lite tool_calls=22 model_steps=1 rejected=0 repairs=0 duration=2.5s tokens in/out=4733/400 stop=diagnosis

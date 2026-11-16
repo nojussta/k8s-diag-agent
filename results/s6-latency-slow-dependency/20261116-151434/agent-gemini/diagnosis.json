@@ -1,0 +1,35 @@
+{
+  "summary": "The latency in the frontend service is caused by the backend service being configured with an excessive artificial delay, degrading request response times.",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "demo/deployment/backend",
+    "explanation": "A recent deployment (revision 22) introduced artificial delay arguments (--random-delay-min=600, --random-delay-max=900), which directly impacts request duration."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "t6",
+      "source": "K8s API: replicasets, deployments",
+      "fact": "The backend deployment was updated with new arguments: --random-delay, --random-delay-unit=ms, --random-delay-min=600, --random-delay-max=900."
+    },
+    {
+      "tool_call": "t10",
+      "source": "Prometheus",
+      "fact": "The backend service 95th percentile latency is ~975ms."
+    },
+    {
+      "tool_call": "t9",
+      "source": "Prometheus",
+      "fact": "The frontend service 95th percentile latency is ~975ms, reflecting the latency introduced by the backend."
+    }
+  ],
+  "impact": "The service demo/frontend is experiencing high latency (\u003e500ms) for 95th percentile requests, negatively affecting user experience.",
+  "next_steps": [
+    {
+      "action": "Revert the backend deployment to the previous configuration (revision 21).",
+      "command": "kubectl rollout undo deployment/backend -n demo",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

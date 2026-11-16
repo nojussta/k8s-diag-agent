@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/backend (container backend) | confidence high
+Service demo/frontend is experiencing high latency due to downstream backend services introducing random delays.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=15 model_steps=17 rejected=1 repairs=0 duration=84.5s tokens in/out=83791/962 stop=diagnosis

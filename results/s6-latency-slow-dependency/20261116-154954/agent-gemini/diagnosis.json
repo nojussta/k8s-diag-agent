@@ -1,0 +1,30 @@
+{
+  "summary": "Service frontend is experiencing high latency due to the backend service, which has been deployed with a configuration that injects random latency into requests.",
+  "root_cause": {
+    "category": "ConfigurationError",
+    "component": "demo/deployment/backend",
+    "explanation": "The backend deployment was recently updated (revision 30) with arguments --random-delay, --random-delay-min=600, and --random-delay-max=900, which causes deliberate request latency between 600ms and 900ms, exceeding the 500ms threshold."
+  },
+  "confidence": "high",
+  "evidence": [
+    {
+      "tool_call": "t7",
+      "source": "K8s API: replicasets, deployments",
+      "fact": "The backend deployment's latest revision (30) added arguments: ['--random-delay', '--random-delay-unit=ms', '--random-delay-min=600', '--random-delay-max=900']."
+    },
+    {
+      "tool_call": "t7",
+      "source": "K8s API: replicasets, deployments",
+      "fact": "The backend last_rollout_at was 2026-11-16T13:50:59Z, which matches the timeframe of the alert start (2026-11-16T13:52:30Z)."
+    }
+  ],
+  "impact": "Increased 95th percentile latency for all frontend users calling the backend service.",
+  "next_steps": [
+    {
+      "action": "Roll back the backend deployment to the previous stable revision.",
+      "command": "kubectl rollout undo deployment/backend -n demo",
+      "requires_human_approval": true
+    }
+  ],
+  "unknowns": []
+}

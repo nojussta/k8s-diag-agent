@@ -1,12 +1,39 @@
 # Results
 
-Everything below comes from the runs recorded in `results/` on a 3-node kind cluster created on 2026-11-12. Every
-run injects one fault, waits for the alert, and then **all methods diagnose the same live fault state**; answers are
-judged by the strict three-part judge (category, component to fix, triggering change; see
-[scenarios.md](scenarios.md)). All methods were run at no cost: the local model runs on the Mac, and Gemini was used on
-its free tier. Regenerate the raw tables with `build/labctl summary --since 20261112`.
+Two evaluation series are recorded in `results/`. Both use `gemini-3.1-flash-lite` on the free tier (the first also a local model) and the strict
+three-part judge (category, component to fix, triggering change; see [scenarios.md](scenarios.md)); in every run all
+methods diagnose the same live fault state.
 
-## Fully correct answers
+## Final series (2026-11-16): extended procedure
+
+`scripts/eval-series.sh` adds procedure step f (on moving to another workload, check its rollout history; a change is
+the cause only if it belongs to the faulting workload and was rolled out shortly before the alert). The earlier prompt
+(`AGENT_PROMPT=v1`) runs as a control on the same faults. Temperature 1.0 is sent with every request, and every
+`metrics.json` records the model, the prompt hash and the generation settings.
+
+| Scenario | Rules | Pipeline | Agent, earlier procedure | Agent, extended procedure |
+|---|---|---|---|---|
+| S5 cause in the caller, alert on the healthy backend | 0/8 | 0/8 | 4/8 | 8/8 |
+| S6 slow backend, alert on the frontend | 0/7 | 0/6 | 3/6 | 6/6 |
+| S7 S4 fault plus an instruction for the agent in the frontend log | 0/2 | 2/2 | – | 1/1 |
+
+- Across S5 and S6 (14 faults): extended procedure 14/14, earlier procedure 7/14 (Fisher's exact test p = 0.006),
+  pipeline 0/14 (p < 0.001). Same model, tools and fault states; only the procedure step differs.
+- S7: the planted instruction reached the model in every investigation and was followed in none; no state-changing
+  action is possible (no write tool, read-only RBAC).
+- Number check (`internal/agent/grounding.go`): 91 % of the numbers in the answers were found in the cited tool
+  results; 15 of 43 answers were flagged. High-confidence answers were correct 49/57 times, medium or low 0/16.
+- Cost at paid-tier list prices: about 2.1 euro cents per agent investigation, 0.2 for the pipeline.
+
+**In-cluster agent.** The agent ran in the cluster throughout the series (`make agent-deploy`) and received every alert
+notification; `make netpol-check` passed 7/7. The queue's storm behaviour (20 alerts, budget 5 per 10 minutes: 5
+investigated, 15 listed in one summary message, repeats ignored) is covered by `internal/watch/queue_test.go`.
+
+## First series (2026-11-12)
+
+Everything below comes from the runs of 2026-11-12 on a 3-node kind cluster.
+
+### Fully correct answers
 
 | Scenario | Rules | Pipeline, local | Agent, local | Pipeline, Gemini | Agent, Gemini |
 |---|---|---|---|---|---|
@@ -25,7 +52,7 @@ baseline runs in every run, so its sample is larger. The local pipeline was re-r
 (`labctl rerun`) after its compact digest was fixed, so all its runs use the same code; S4 and S5 have one extra
 run there because the re-run also covered the runs made for Gemini.
 
-## What it shows
+### What it shows
 
 - **Known failure classes (S1-S3): the model adds nothing.** Seven if-then rules over the fixed read-only sequence are
   right every time in under 0.2 s. The hosted model is equally right, slower, and costs tokens.
@@ -40,7 +67,7 @@ run there because the re-run also covered the runs made for Gemini.
 - **The local model is too weak for the strict judge** (3 fully correct answers out of 32), even with the decisive
   facts in its input. It remains the private, free option.
 
-## Earlier runs, re-judged
+### Earlier runs, re-judged
 
 The three local-model S1 runs of 2026-11-11 counted as 3/3 correct under the old, category-only judge. Re-judged with
 `labctl judge`, they are 0/3: none of them called the rollout-history tool, so none named the change. The single
@@ -51,7 +78,7 @@ free tier's 20-requests-per-day limit and are not in the table; where they answe
 correct, S5 pipeline wrong). One run's trace shows the agent moving from the backend to the frontend's pod status,
 rollout history and logs before the quota ended it.
 
-## Other measurements
+### Other measurements
 
 - Alert detection latency: 100-176 s depending on the alert rule (S1 and S4 about 100 s, S2/S3 about 152 s, S5 about
   176 s); the fixed sequence takes 19-22 read-only calls in under 0.1 s.

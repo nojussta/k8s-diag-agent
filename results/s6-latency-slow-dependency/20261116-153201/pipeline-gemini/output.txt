@@ -1,0 +1,5 @@
+mode=pipeline provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/frontend | confidence medium
+The demo/frontend service is experiencing high latency, likely due to a recent configuration change. Although the pod is reporting as ready, initial startup logs confirm that the readiness probe failed during the first attempt due to connection refusal, suggesting an issue with the application startup sequence following the addition of the '--ui-color' argument.
+notification delivered to the webhook
+mode=pipeline model=gemini-3.1-flash-lite tool_calls=22 model_steps=2 rejected=0 repairs=1 duration=32.2s tokens in/out=10090/1114 stop=diagnosis

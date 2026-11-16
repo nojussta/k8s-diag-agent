@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+ConfigurationError | demo/deployment/backend | confidence high
+The 'backend' service is receiving almost no traffic because the 'frontend' is failing to communicate with it, likely due to a port mismatch following a recent deployment update.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=7 model_steps=11 rejected=3 repairs=0 duration=65.8s tokens in/out=42241/898 stop=diagnosis

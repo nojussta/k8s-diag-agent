@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-16T13:43:45Z",
+    "text": "Incident triage: LabHighLatency\nProbable cause: Unknown in demo/deployment/frontend (confidence low)\nNo clear root cause for the high latency was found. The pod resource usage is well within limits, and there are no signs of crashing or restarts. The application metrics confirm elevated p95 latency, but logs do not indicate internal errors.\n\nEvidence:\n- [A11 Prometheus] The p95 latency is 0.92s, exceeding the 0.5s alert threshold.\n- [A7 Prometheus] Pod resource usage (CPU and memory) is well below requested limits.\n- [A2 K8s API] The pod is currently in 'Running' phase and 'Ready' condition is true.\n\nSuggested next steps (not executed; a person decides):\n- Investigate downstream dependencies like the backend service, as the frontend might be waiting for upstream responses.: kubectl logs -l app=backend -n demo\n- Enable application-level tracing to identify which part of the request path is introducing latency.\n\nUnknown: Downstream dependency latency (backend service); External network congestion; Application internal processing bottlenecks not reflected in logs\n\nMethod pipeline, model gemini-3.1-flash-lite, 22 read-only calls, 2.3 s.\n"
+  }
+]

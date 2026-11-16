@@ -1,0 +1,5 @@
+mode=agent provider=gemini model=gemini-3.1-flash-lite
+DependencyFailure | demo/deployment/backend | confidence high
+Service frontend high latency is caused by a performance bottleneck in the dependency service backend.
+notification delivered to the webhook
+mode=agent model=gemini-3.1-flash-lite tool_calls=14 model_steps=17 rejected=2 repairs=0 duration=94.2s tokens in/out=83132/1006 stop=diagnosis

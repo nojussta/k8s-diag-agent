@@ -1,0 +1,6 @@
+[
+  {
+    "received": "2026-11-16T14:11:01Z",
+    "text": "Incident triage: LabHighLatency\nProbable cause: ConfigurationError in demo/deployment/frontend (confidence high)\nA configuration change in the latest revision updated the --backend-url argument to point to port 9899, which is likely incorrect or inaccessible, leading to 'context canceled' errors in the application logs.\n\nEvidence:\n- [A5 K8s API: replicasets, deployments] The template_diff_latest_vs_previous shows that the --backend-url was changed from 'http://backend.demo.svc.cluster.local:9898/echo' to 'http://backend.demo.svc.cluster.local:9899/echo'.\n- [A4 K8s API: pods/log] Logs show frequent 'backend call failed' errors with 'context canceled' when attempting to call 'http://backend.demo.svc.cluster.local:9899/echo'.\n- [A11 Prometheus (application metrics)] The 95th percentile latency is approximately 1.9 seconds, exceeding the 500ms threshold.\n\nSuggested next steps (not executed; a person decides):\n- Revert the deployment to the previous known working configuration to restore the correct backend port.: kubectl rollout undo deployment/frontend -n demo\n\nNot verified automatically (number not found in the cited tool result): evidence[2] (A11): 500\n\nMethod pipeline, model gemini-3.1-flash-lite, 22 read-only calls, 2.5 s.\n"
+  }
+]

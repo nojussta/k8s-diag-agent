@@ -1,0 +1,5 @@
+mode=pipeline provider=gemini model=gemini-3.1-flash-lite
+ProbeFailure | demo/deployment/frontend | confidence medium
+The demo/frontend service is experiencing high latency. While the application is running, it experienced intermittent readiness probe failures on startup, suggesting a slight delay in the application becoming fully operational or a potential misconfiguration in the probe settings.
+notification delivered to the webhook
+mode=pipeline model=gemini-3.1-flash-lite tool_calls=22 model_steps=1 rejected=0 repairs=0 duration=4.7s tokens in/out=4749/469 stop=diagnosis
