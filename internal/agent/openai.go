@@ -527,3 +527,10 @@ func (o *OpenAIChat) chat(ctx context.Context, body map[string]any) (Step, error
 	}
 	return st, nil
 }
+
+// Describe implements Describer: the OpenAI-compatible clients (local apfel
+// and any other server) always send temperature 0.
+func (o *OpenAIChat) Describe() (string, map[string]any) {
+	return PromptID(o.System), map[string]any{"api": "chat.completions", "temperature": 0,
+		"context_tokens": o.ContextTokens, "flatten": o.Flatten}
+}

@@ -40,6 +40,11 @@ type Gemini struct {
 	Sleep   func(time.Duration) // for tests
 	Backoff func(attempt int) time.Duration
 
+	// Temperature is sent as generation_config.temperature when set. The
+	// prototype pins it to 1.0, the documented default of the Gemini 3 family,
+	// so the value is explicit in every request and in every run's metrics.
+	Temperature *float64
+
 	// MinInterval spaces requests (free tier: 15 requests per minute, so about
 	// 4 s); the pause counts as rate-limit waiting.
 	MinInterval time.Duration
@@ -76,7 +81,23 @@ func NewGemini(key, model string, tools []ToolDef, schema json.RawMessage) *Gemi
 	if model == "" {
 		model = DefaultGeminiModel
 	}
-	return &Gemini{Key: key, Model: model, System: SystemPrompt, Tools: tools, Schema: schema}
+	t := DefaultTemperature
+	return &Gemini{Key: key, Model: model, System: SystemPrompt, Tools: tools, Schema: schema, Temperature: &t}
+}
+
+// DefaultTemperature is the sampling temperature of the hosted model.
+const DefaultTemperature = 1.0
+
+// Describe implements Describer.
+func (g *Gemini) Describe() (string, map[string]any) {
+	gen := map[string]any{"api": "interactions", "store": false, "response_format": "json_schema",
+		"top_p": "provider default", "thinking_level": "provider default", "seed": "not set"}
+	if g.Temperature != nil {
+		gen["temperature"] = *g.Temperature
+	} else {
+		gen["temperature"] = "provider default"
+	}
+	return PromptID(g.System), gen
 }
 
 func (g *Gemini) endpoint() string {
@@ -127,6 +148,9 @@ func (g *Gemini) requestWith(history []Turn, withTools bool) ([]byte, error) {
 	}
 	if len(tools) > 0 {
 		body["tools"] = tools
+	}
+	if g.Temperature != nil {
+		body["generation_config"] = map[string]any{"temperature": *g.Temperature}
 	}
 	if len(g.Schema) > 0 {
 		var schema any

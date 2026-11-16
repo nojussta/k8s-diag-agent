@@ -461,8 +461,12 @@ func (c *collector) rollout(ctx context.Context, pod *corev1.Pod) (any, error) {
 
 	st := dep.Status
 	conds := []string{}
+	lastRollout := ""
 	for _, x := range st.Conditions {
 		conds = append(conds, fmt.Sprintf("%s=%s (%s): %s", x.Type, x.Status, x.Reason, x.Message))
+		if x.Type == appsv1.DeploymentProgressing && !x.LastUpdateTime.IsZero() {
+			lastRollout = x.LastUpdateTime.UTC().Format(time.RFC3339)
+		}
 	}
 	var revs []map[string]any
 	for i, r := range sets {
@@ -483,6 +487,12 @@ func (c *collector) rollout(ctx context.Context, pod *corev1.Pod) (any, error) {
 			"updatedReplicas": st.UpdatedReplicas},
 		"conditions": conds,
 		"revisions":  revs,
+	}
+	if lastRollout != "" {
+		// When the newest revision was rolled out: a ReplicaSet that is reused by a
+		// rollback keeps its old creation time, so "created" alone cannot tell
+		// whether a change is recent enough to explain an alert.
+		result["last_rollout_at"] = lastRollout
 	}
 	if len(sets) >= 2 {
 		result["template_diff_latest_vs_previous"] = DiffTemplates(templateView(&sets[0]), templateView(&sets[1]))
