@@ -1,0 +1,10 @@
+# The in-cluster agent image: two static Go binaries and nothing else (no shell,
+# package manager or interpreter, so there is nothing to run even if the model
+# were talked into trying). The binaries are compiled by `make image`, so the
+# build needs no network. CA certificates are embedded in /diag-agent.
+FROM scratch
+COPY build/linux/diag-agent /diag-agent
+COPY build/linux/mcp-server /mcp-server
+USER 65532:65532
+EXPOSE 8080
+ENTRYPOINT ["/diag-agent"]

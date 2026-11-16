@@ -1,54 +1,13 @@
-# The agent namespace, the alert receiver and read-only permissions.
+# The agent as it runs in the cluster: namespace, read-only identity, the
+# Deployment (alert webhook + queue + orchestrator + MCP server in one pod),
+# its Service and a NetworkPolicy. Applied by `make agent-deploy`.
 apiVersion: v1
 kind: Namespace
 metadata:
   name: diag-agent
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: alert-receiver
-  namespace: diag-agent
-  labels: { app: alert-receiver }
-spec:
-  replicas: 1
-  selector:
-    matchLabels: { app: alert-receiver }
-  template:
-    metadata:
-      labels: { app: alert-receiver }
-    spec:
-      containers:
-        - name: receiver
-          # Go binary; the image is built and loaded into kind by `make receiver`.
-          image: diag-agent/alert-receiver:dev
-          imagePullPolicy: IfNotPresent
-          securityContext:
-            runAsNonRoot: true
-            readOnlyRootFilesystem: true
-            allowPrivilegeEscalation: false
-            capabilities: { drop: [ALL] }
-          ports:
-            - { name: http, containerPort: 8080 }
-          readinessProbe:
-            httpGet: { path: /healthz, port: http }
-            periodSeconds: 5
-          resources:
-            requests: { cpu: 10m, memory: 32Mi }
-            limits: { memory: 128Mi }
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: alert-receiver
-  namespace: diag-agent
-spec:
-  selector: { app: alert-receiver }
-  ports:
-    - { name: http, port: 8080, targetPort: http }
----
-# The agent identity. The prototype uses this account, so its permissions
-# are restricted at the Kubernetes RBAC level and not only in the agent code (least privilege).
+# The agent identity. Its permissions are restricted at the Kubernetes RBAC
+# level and not only in the agent code (protection level 1, least privilege).
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -60,8 +19,9 @@ kind: ClusterRole
 metadata:
   name: diag-agent-readonly
 rules:
-  # Only get/list/watch. No create/update/patch/delete, exec or port-forward.
-  # "secrets" are deliberately excluded: for diagnosis, events saying that a secret does not exist are enough.
+  # Only get/list/watch. No create/update/patch/delete, exec, port-forward or
+  # services/proxy. "secrets" are deliberately excluded: for diagnosis, events
+  # saying that a secret does not exist are enough.
   - apiGroups: [""]
     resources: [pods, pods/log, events, services, endpoints, nodes, configmaps, namespaces, persistentvolumeclaims]
     verbs: [get, list, watch]
@@ -93,3 +53,138 @@ subjects:
   - kind: ServiceAccount
     name: diag-agent
     namespace: diag-agent
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: diag-agent
+  namespace: diag-agent
+  labels: { app: diag-agent }
+spec:
+  replicas: 1
+  # One instance: the queue and the duplicate filter are in memory.
+  strategy: { type: Recreate }
+  selector:
+    matchLabels: { app: diag-agent }
+  template:
+    metadata:
+      labels: { app: diag-agent, component: agent }
+    spec:
+      serviceAccountName: diag-agent
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile: { type: RuntimeDefault }
+      containers:
+        - name: agent
+          # Built and loaded into kind by `make image`.
+          image: diag-agent/agent:dev
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities: { drop: [ALL] }
+          env:
+            # "false": only record alerts (the lab's scenario runner then starts the
+            # methods itself). "true": investigate every firing alert (make agent-on).
+            - { name: AUTO_INVESTIGATE, value: "false" }
+            - { name: LLM_PROVIDER, value: gemini }
+            - { name: GEMINI_MODEL, value: gemini-3.1-flash-lite }
+            - { name: GEMINI_MIN_INTERVAL, value: 4.2s }
+            - { name: QUEUE_BUDGET, value: "5" }
+            - { name: QUEUE_WINDOW, value: 10m }
+            # The API key never appears in the manifest or the image: it comes from a
+            # Secret created by `make agent-secret`. The agent's own account cannot read Secrets.
+            - name: GEMINI_API_KEY
+              valueFrom:
+                secretKeyRef: { name: diag-agent-llm, key: GEMINI_API_KEY, optional: true }
+            - name: NOTIFY_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef: { name: diag-agent-llm, key: NOTIFY_WEBHOOK_URL, optional: true }
+          ports:
+            - { name: http, containerPort: 8080 }
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 5
+          resources:
+            requests: { cpu: 20m, memory: 48Mi }
+            limits: { memory: 256Mi }
+          volumeMounts:
+            - { name: work, mountPath: /work }
+      volumes:
+        # Traces of the investigations; the only writable path.
+        - name: work
+          emptyDir: { sizeLimit: 256Mi }
+---
+# Alertmanager is configured with this address, so the Service keeps the name
+# it had when the pod behind it only recorded alerts.
+apiVersion: v1
+kind: Service
+metadata:
+  name: alert-receiver
+  namespace: diag-agent
+spec:
+  selector: { app: diag-agent, component: agent }
+  ports:
+    - { name: http, port: 8080, targetPort: http }
+---
+# What the agent pod may talk to. In: Alertmanager, and the cluster nodes (the
+# lab tooling reads results through the API server proxy; kubelet probes).
+# Out: DNS, the Kubernetes API, Prometheus, Loki and HTTPS outside the cluster
+# (the model provider and the chat webhook). The application namespaces are not
+# reachable, so the agent cannot call the services it diagnoses.
+# A standard NetworkPolicy selects by IP block, not by host name: narrowing the
+# HTTPS rule to the provider's name needs a CNI with FQDN policies (e.g. Cilium).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: diag-agent
+  namespace: diag-agent
+spec:
+  podSelector:
+    matchLabels: { app: diag-agent }
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: monitoring }
+          podSelector:
+            matchLabels: { app.kubernetes.io/name: alertmanager }
+        - ipBlock: { cidr: NODE_CIDR }
+      ports:
+        - { protocol: TCP, port: 8080 }
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: kube-system }
+          podSelector:
+            matchLabels: { k8s-app: kube-dns }
+      ports:
+        - { protocol: UDP, port: 53 }
+        - { protocol: TCP, port: 53 }
+    - to:
+        - ipBlock: { cidr: NODE_CIDR }
+      ports:
+        - { protocol: TCP, port: 6443 }
+    - to:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: monitoring }
+          podSelector:
+            matchLabels: { app.kubernetes.io/name: prometheus }
+      ports:
+        - { protocol: TCP, port: 9090 }
+    - to:
+        - namespaceSelector:
+            matchLabels: { kubernetes.io/metadata.name: logging }
+          podSelector:
+            matchLabels: { app.kubernetes.io/name: loki }
+      ports:
+        - { protocol: TCP, port: 3100 }
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16]
+      ports:
+        - { protocol: TCP, port: 443 }

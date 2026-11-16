@@ -9,6 +9,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
@@ -18,6 +20,7 @@ import (
 	"time"
 
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/nojussta/k8s-diag-agent/internal/alertmsg"
@@ -43,6 +46,58 @@ type Lab struct {
 	Root       string
 	Kubeconfig string
 	Cs         kubernetes.Interface
+	// Direct is set when the process runs inside the cluster: Prometheus and
+	// Loki are then reached at their Service addresses instead of through the
+	// API server proxy, so the agent's account needs no "services/proxy" right.
+	Direct bool
+}
+
+// InCluster connects with the pod's service account (the agent's read-only
+// identity). Used by the MCP server when the agent runs as a Deployment.
+func InCluster() (*Lab, error) {
+	cfg, err := rest.InClusterConfig()
+	if err != nil {
+		return nil, err
+	}
+	cfg.QPS, cfg.Burst = 50, 100
+	cfg.Timeout = 60 * time.Second
+	cs, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+	return &Lab{Cs: cs, Direct: true}, nil
+}
+
+// Running reports whether the process is inside a pod and no kubeconfig was
+// given, i.e. whether InCluster should be used instead of New.
+func Running() bool {
+	return os.Getenv("KUBERNETES_SERVICE_HOST") != "" && os.Getenv("KUBECONFIG") == ""
+}
+
+var directHTTP = &http.Client{Timeout: 30 * time.Second}
+
+func (l *Lab) directGet(ctx context.Context, svc Svc, path string, params url.Values) ([]byte, error) {
+	u := fmt.Sprintf("http://%s.%s.svc:%s/%s", svc.Name, svc.Namespace, svc.Port, strings.TrimLeft(path, "/"))
+	if len(params) > 0 {
+		u += "?" + params.Encode()
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := directHTTP.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 8<<20))
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode/100 != 2 {
+		return nil, fmt.Errorf("%s answered %s: %s", svc.Name, resp.Status, strings.TrimSpace(string(body[:min(len(body), 200)])))
+	}
+	return body, nil
 }
 
 // FindRoot walks up from the working directory to the directory holding go.mod
@@ -98,6 +153,9 @@ func New() (*Lab, error) {
 
 // ProxyGet performs GET <svc>/<path>?<params> via the API server proxy.
 func (l *Lab) ProxyGet(ctx context.Context, svc Svc, path string, params url.Values) ([]byte, error) {
+	if l.Direct {
+		return l.directGet(ctx, svc, path, params)
+	}
 	req := l.Cs.CoreV1().RESTClient().Get().
 		Namespace(svc.Namespace).Resource("services").Name(svc.proxyName()).SubResource("proxy").
 		Suffix(path)

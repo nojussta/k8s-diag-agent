@@ -19,7 +19,13 @@ import (
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
-	l, err := lab.New()
+	// Inside a pod the server uses the agent's read-only service account;
+	// on a workstation it uses the lab's isolated kubeconfig.
+	connect := lab.New
+	if lab.Running() {
+		connect = lab.InCluster
+	}
+	l, err := connect()
 	if err != nil {
 		log.Fatal(err)
 	}

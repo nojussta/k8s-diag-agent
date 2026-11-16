@@ -47,6 +47,13 @@ func (s *Store) Since(ts float64) []alertmsg.Notification {
 // NewHandler wires the three endpoints. One JSON line per notification is
 // written to logs (picked up by Alloy -> Loki as well).
 func NewHandler(store *Store, logs io.Writer) http.Handler {
+	return NewMux(store, logs, nil)
+}
+
+// NewMux is NewHandler with a hook that is called for every accepted
+// notification (the in-cluster agent hands the alerts to its queue there) and
+// returns the mux, so more endpoints can be added.
+func NewMux(store *Store, logs io.Writer, onPayload func(alertmsg.Payload)) *http.ServeMux {
 	mux := http.NewServeMux()
 	logger := json.NewEncoder(logs)
 	var logMu sync.Mutex
@@ -77,6 +84,9 @@ func NewHandler(store *Store, logs io.Writer) http.Handler {
 		_ = logger.Encode(map[string]any{"event": "alert_received", "alerts": alertmsg.Summarize(payload)})
 		logMu.Unlock()
 		writeJSON(w, http.StatusOK, map[string]string{"status": "received"})
+		if onPayload != nil {
+			onPayload(payload)
+		}
 	})
 	return mux
 }
